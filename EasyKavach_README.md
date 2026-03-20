@@ -1,10 +1,10 @@
-# 🛵 ShieldKart — AI-Powered Parametric Income Insurance for Blinkit Delivery Partners
+#  EasyKavach — AI-Powered Parametric Income Insurance for Blinkit Delivery Partners
 
-> **Guidewire DEVTrails 2026 | Team Submission | Phase 1**
+> **Guidewire DEVTrails 2026 | Team Submission | Phase 1 | Team Name: Ninja Turtles**
 
 ---
 
-## 📌 Overview
+##  Overview
 
 ShieldKart is an AI-enabled parametric insurance platform that protects **Blinkit grocery delivery partners** from income loss caused by uncontrollable external disruptions — extreme weather, hazardous air quality, floods, curfews, and civic events.
 
@@ -19,7 +19,7 @@ When a disruption occurs, ShieldKart **automatically detects it, initiates a cla
 
 ---
 
-## 🚨 The Problem
+##  The Problem
 
 India's Blinkit delivery partners are the backbone of quick commerce. But when external disruptions hit:
 
@@ -32,14 +32,14 @@ These workers lose **20–30% of their monthly income** with zero protection and
 
 ---
 
-## 🏗️ System Architecture
+##  System Architecture
 
 ![ShieldKart System Architecture]<img width="1408" height="768" alt="generated-image" src="https://github.com/user-attachments/assets/512b3f4d-a1e7-4ad0-b741-c5c0dfca8bf1" />
 
 
 ---
 
-## ⚙️ End-to-End System Flow
+##  End-to-End System Flow
 
 ```
 ┌─────────────────────────────────────────────────────┐
@@ -86,7 +86,7 @@ These workers lose **20–30% of their monthly income** with zero protection and
 
 ---
 
-## 🧠 PILLAR 1 — AI-Powered Risk Assessment
+##  PILLAR 1 — AI-Powered Risk Assessment
 
 ### 1.1 Shift-Based Income Modeling Engine
 
@@ -154,7 +154,7 @@ Risk Score = α(Weather Risk) + β(Traffic Disruption Risk) + γ(Pollution Risk)
 
 ---
 
-### 1.4 🌲 Random Forest Upgrade — Phase 3
+### 1.4  Random Forest Upgrade — Phase 3
 
 In Phase 3, the manual weights (w1–w5) in the earning formula are **replaced by a trained Random Forest regression model**.
 
@@ -179,7 +179,7 @@ In Phase 3, the manual weights (w1–w5) in the earning formula are **replaced b
 
 ---
 
-## ⚡ PILLAR 2 — Parametric Automation
+##  PILLAR 2 — Parametric Automation
 
 ### 2.1 Real-Time Trigger Monitoring — 5 Geo-Fenced Triggers
 
@@ -272,7 +272,7 @@ When **50+ workers from the same zone** submit claims within a short window, the
 
 ---
 
-## 🔍 PILLAR 3 — Intelligent Fraud Detection
+##  PILLAR 3 — Intelligent Fraud Detection
 
 ### 3.1 Phase 1 & 2 — Rule-Based Fraud Engine
 
@@ -292,7 +292,7 @@ And at the mass event level:
 
 ---
 
-### 3.2 Phase 3 — 🌲 Random Forest Fraud Classifier
+### 3.2 Phase 3 —  Random Forest Fraud Classifier
 
 A **Random Forest binary classifier** trained on labeled claim data (legitimate vs. fraudulent):
 
@@ -320,7 +320,7 @@ Auto-approve if fraud_probability < 0.2 | Flag if 0.2–0.6 | Reject if > 0.6
 
 ---
 
-## 💸 PILLAR 4 — Instant Payout Processing
+##  PILLAR 4 — Instant Payout Processing
 
 ### Payout Flow
 
@@ -349,7 +349,7 @@ Auto-approve if fraud_probability < 0.2 | Flag if 0.2–0.6 | Reject if > 0.6
 
 ---
 
-## 🖥️ Sample Full System Output
+##  Sample Full System Output
 
 ```json
 {
@@ -383,7 +383,7 @@ Auto-approve if fraud_probability < 0.2 | Flag if 0.2–0.6 | Reject if > 0.6
 
 ---
 
-## 📅 ML Evolution Roadmap
+##  ML Evolution Roadmap
 
 | Phase | Dates | ML Approach | Purpose |
 |-------|-------|-------------|---------|
@@ -412,7 +412,7 @@ Auto-approve if fraud_probability < 0.2 | Flag if 0.2–0.6 | Reject if > 0.6
 
 ---
 
-## 🗓️ 6-Week Development Timeline
+##  6-Week Development Timeline
 
 ### Phase 1 — Seed (March 4–20): Ideate & Know Your Delivery Worker
 - [x] Define persona: Blinkit Delivery Partners
@@ -422,7 +422,7 @@ Auto-approve if fraud_probability < 0.2 | Flag if 0.2–0.6 | Reject if > 0.6
 - [x] Plan ML roadmap (weighted → Random Forest)
 - [x] Define fraud detection strategy
 - [x] Write README (this document)
-- [ ] Record 2-minute strategy + prototype video *(link below)*
+- [x] Record 2-minute strategy + prototype video *(link below)*
 
 ### Phase 2 — Scale (March 21–April 4): Protect Your Worker
 - [ ] Worker registration & onboarding flow
@@ -453,11 +453,11 @@ Auto-approve if fraud_probability < 0.2 | Flag if 0.2–0.6 | Reject if > 0.6
 - [x] Parametric triggers defined (5 triggers)
 - [x] AI/ML integration plan documented
 - [x] Tech stack outlined
-- [ ] 2-minute strategy video → *(add link here)*
+- [x] 2-minute strategy video → *(add link here)*
 
 ---
 
-## 👥 Team
+##  Team
 
 | Name | Role |
 |------|------|
@@ -469,13 +469,13 @@ Auto-approve if fraud_probability < 0.2 | Flag if 0.2–0.6 | Reject if > 0.6
 
 ---
 
-## 🔗 Links
+##  Links
 
 | Resource | Link |
 |----------|------|
 | GitHub Repository | *(Add link)* |
 | Phase 1 Demo Video | *(Add link)* |
-| Architecture Diagram | See above |
+| Prototype link | *https://attached-assets--guptadaksh1509.replit.app* |
 
 ---
 
