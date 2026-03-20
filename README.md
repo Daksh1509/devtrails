@@ -473,7 +473,7 @@ Auto-approve if fraud_probability < 0.2 | Flag if 0.2–0.6 | Reject if > 0.6
 
 | Resource | Link |
 |----------|------|
-| GitHub Repository | *(Add link)* |
+| GitHub Repository | *https://github.com/Daksh1509/EasyKavach.git* |
 | Phase 1 Demo Video | *(Add link)* |
 | Prototype link | *https://attached-assets--guptadaksh1509.replit.app* |
 
