@@ -34,7 +34,7 @@ These workers lose **20–30% of their monthly income** with zero protection and
 
 ##  System Architecture
 
-![ShieldKart System Architecture]<img width="1408" height="768" alt="generated-image" src="https://github.com/user-attachments/assets/512b3f4d-a1e7-4ad0-b741-c5c0dfca8bf1" />
+![EasyKavach System Architecture]<img width="1408" height="684" alt="generated-image(1)" src="https://github.com/user-attachments/assets/dc1d433c-16e2-4e63-93ee-34588d49573d" />
 
 
 ---
