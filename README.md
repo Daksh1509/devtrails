@@ -6,9 +6,9 @@
 
 ##  Overview
 
-ShieldKart is an AI-enabled parametric insurance platform that protects **Blinkit grocery delivery partners** from income loss caused by uncontrollable external disruptions — extreme weather, hazardous air quality, floods, curfews, and civic events.
+EasyKavach is an AI-enabled parametric insurance platform that protects **Blinkit grocery delivery partners** from income loss caused by uncontrollable external disruptions — extreme weather, hazardous air quality, floods, curfews, and civic events.
 
-When a disruption occurs, ShieldKart **automatically detects it, initiates a claim, validates it using AI, and credits the worker's lost income instantly** — no paperwork, no calls, no waiting.
+When a disruption occurs, EasyKavach **automatically detects it, initiates a claim, validates it using AI, and credits the worker's lost income instantly** — no paperwork, no calls, no waiting.
 
 | | |
 |---|---|
@@ -28,13 +28,13 @@ India's Blinkit delivery partners are the backbone of quick commerce. But when e
 - 🏭 **Hazardous AQI (>300)** → unsafe air makes outdoor delivery impossible
 - 🚫 **Curfews, bandhs, local strikes** → access to pickup/drop zones is completely blocked
 
-These workers lose **20–30% of their monthly income** with zero protection and zero safety net. They bear the full financial loss with no recourse. ShieldKart changes that by insuring the **income lost** during these events — not the cost of fixing external issues.
+These workers lose **20–30% of their monthly income** with zero protection and zero safety net. They bear the full financial loss with no recourse. EasyKavach changes that by insuring the **income lost** during these events — not the cost of fixing external issues.
 
 ---
 
 ##  System Architecture
 
-![EasyKavach System Architecture]<img width="1408" height="684" alt="generated-image(1)" src="https://github.com/user-attachments/assets/dc1d433c-16e2-4e63-93ee-34588d49573d" />
+<img width="1408" height="684" alt="generated-image(1)" src="https://github.com/user-attachments/assets/dc1d433c-16e2-4e63-93ee-34588d49573d" />
 
 
 ---
@@ -90,7 +90,7 @@ These workers lose **20–30% of their monthly income** with zero protection and
 
 ### 1.1 Shift-Based Income Modeling Engine
 
-The foundation of ShieldKart is a **shift-based income modeling engine**. A Blinkit worker's day is divided into flexible **4–5 hour shifts**. Workers select one or multiple shifts based on their availability.
+The foundation of EasyKavach is a **shift-based income modeling engine**. A Blinkit worker's day is divided into flexible **4–5 hour shifts**. Workers select one or multiple shifts based on their availability.
 
 For each shift, the system estimates the **minimum expected earning** the worker would have made if no disruption occurred. This becomes the basis for:
 - Calculating loss during a disruption
