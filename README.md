@@ -465,7 +465,7 @@ Auto-approve if fraud_probability < 0.2 | Flag if 0.2–0.6 | Reject if > 0.6
 | *Pratyaksh Soni* | *Team Member* |
 | *Akshita Singh Tyagi* | *Team Member* |
 | *Saahas Singh* | *Team Member* |
-| *Abhivandon Tandon* | *Team Member* |
+| *Abhivandan Tandon* | *Team Member* |
 
 ---
 
