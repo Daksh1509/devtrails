@@ -1,0 +1,66 @@
+import React from 'react';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import AmbientBackground from './components/AmbientBackground';
+import Navbar from './components/Navbar';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import AdminPage from './pages/AdminPage';
+import EasyKavachDashboard from './pages/EasyKavachDashboard';
+import LoginPage from './pages/LoginPage';
+import ProfilePage from './pages/ProfilePage';
+import RegisterPage from './pages/RegisterPage';
+
+function RequireRole({ role, children }) {
+  const { session, isAuthenticated } = useAuth();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (role && session?.type !== role) {
+    return <Navigate to={session?.type === 'admin' ? '/admin' : '/profile'} replace />;
+  }
+
+  return children;
+}
+
+function AppRoutes() {
+  return (
+    <div className="clean-app">
+      <AmbientBackground />
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<EasyKavachDashboard />} />
+        <Route path="/dashboard" element={<Navigate to="/" replace />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/profile"
+          element={
+            <RequireRole role="worker">
+              <ProfilePage />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <RequireRole role="admin">
+              <AdminPage />
+            </RequireRole>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </div>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <AppRoutes />
+      </BrowserRouter>
+    </AuthProvider>
+  );
+}

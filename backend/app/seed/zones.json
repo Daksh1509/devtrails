@@ -1,0 +1,62 @@
+[
+  {
+    "id": "koramangala_blr",
+    "name": "Koramangala, Bengaluru",
+    "city": "Bengaluru",
+    "latitude": 12.9345,
+    "longitude": 77.6266,
+    "elevation_m": 890.0,
+    "flood_prone": false,
+    "base_risk_score": 0.4,
+    "footfall_score": 0.9,
+    "historical_order_density": 0.85
+  },
+  {
+    "id": "velachery_chn",
+    "name": "Velachery, Chennai",
+    "city": "Chennai",
+    "latitude": 12.9782,
+    "longitude": 80.2184,
+    "elevation_m": 2.0,
+    "flood_prone": true,
+    "base_risk_score": 0.8,
+    "footfall_score": 0.7,
+    "historical_order_density": 0.65
+  },
+  {
+    "id": "cp_delhi",
+    "name": "Connaught Place, Delhi",
+    "city": "Delhi",
+    "latitude": 28.6304,
+    "longitude": 77.2177,
+    "elevation_m": 213.0,
+    "flood_prone": false,
+    "base_risk_score": 0.7,
+    "footfall_score": 0.95,
+    "historical_order_density": 0.9
+  },
+  {
+    "id": "bandra_mumbai",
+    "name": "Bandra West, Mumbai",
+    "city": "Mumbai",
+    "latitude": 19.0596,
+    "longitude": 72.8295,
+    "elevation_m": 5.0,
+    "flood_prone": false,
+    "base_risk_score": 0.5,
+    "footfall_score": 0.85,
+    "historical_order_density": 0.8
+  },
+  {
+    "id": "indiranagar_blr",
+    "name": "Indiranagar, Bengaluru",
+    "city": "Bengaluru",
+    "latitude": 12.9719,
+    "longitude": 77.6412,
+    "elevation_m": 900.0,
+    "flood_prone": false,
+    "base_risk_score": 0.3,
+    "footfall_score": 0.8,
+    "historical_order_density": 0.75
+  }
+]
