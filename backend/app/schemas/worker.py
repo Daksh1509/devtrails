@@ -27,7 +27,10 @@ class Zone(ZoneBase):
 class WorkerBase(BaseModel):
     name: str
     phone: str
-    upi_id: str
+    email: Optional[str] = None
+    pancard: Optional[str] = None
+    aadhaar: Optional[str] = None
+    upi_id: str = ""
     zone_id: str
     area_type: AreaType = AreaType.COMMERCIAL
     warehouse_distance_km: float = 1.0
@@ -35,10 +38,15 @@ class WorkerBase(BaseModel):
     shifts: List[str] = []
 
 class WorkerCreate(WorkerBase):
-    pass
+    email: str
+    pancard: str
+    aadhaar: str
 
 class WorkerUpdate(BaseModel):
     name: Optional[str] = None
+    email: Optional[str] = None
+    pancard: Optional[str] = None
+    aadhaar: Optional[str] = None
     upi_id: Optional[str] = None
     zone_id: Optional[str] = None
     area_type: Optional[AreaType] = None

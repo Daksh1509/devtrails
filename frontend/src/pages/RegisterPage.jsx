@@ -1,38 +1,34 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   ArrowRight,
-  Briefcase,
+  Building2,
+  CreditCard,
   Loader2,
+  Mail,
   MapPin,
   Phone,
   ShieldCheck,
   Sparkles,
   UserRound,
-  Wallet,
-  Zap,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { policyService, workerService } from '../services/api';
 import { formatCurrency, formatNumber } from '../utils/formatters';
 
-const SHIFT_OPTIONS = ['morning', 'afternoon', 'evening', 'night'];
-const AREA_OPTIONS = [
-  { value: 'commercial', label: 'Commercial' },
-  { value: 'college', label: 'College' },
-  { value: 'residential', label: 'Residential' },
-  { value: 'low_density', label: 'Low density' },
-];
+const ORG_OPTIONS = ['Blinkit', 'Zepto', 'Uber Eats'];
+const DEFAULT_SHIFTS = ['evening'];
 
 const emptyForm = {
   name: '',
   phone: '',
-  upi_id: '',
+  pancard: '',
+  aadhaar: '',
+  email: '',
   zone_id: '',
   area_type: 'commercial',
   warehouse_distance_km: 1.0,
   platform_type: 'Blinkit',
-  shifts: ['evening'],
 };
 
 export default function RegisterPage() {
@@ -55,7 +51,7 @@ export default function RegisterPage() {
           setFormData((current) => ({ ...current, zone_id: nextZones[0].id }));
         }
       } catch (err) {
-        setError('Could not load zone list. Please try again.');
+        setError('Could not load delivery zones right now. Please try again.');
       }
     };
 
@@ -71,21 +67,6 @@ export default function RegisterPage() {
       navigate('/admin', { replace: true });
     }
   }, [navigate, session]);
-
-  const toggleShift = (shift) => {
-    setFormData((current) => {
-      const exists = current.shifts.includes(shift);
-      if (exists && current.shifts.length === 1) {
-        return current;
-      }
-      return {
-        ...current,
-        shifts: exists
-          ? current.shifts.filter((item) => item !== shift)
-          : [...current.shifts, shift],
-      };
-    });
-  };
 
   const updateField = (field, value) => {
     setFormData((current) => ({ ...current, [field]: value }));
@@ -118,7 +99,7 @@ export default function RegisterPage() {
   }, [formData.zone_id, zones]);
 
   useEffect(() => {
-    if (!formData.zone_id || !formData.shifts.length) {
+    if (!formData.zone_id) {
       setQuote(null);
       return undefined;
     }
@@ -130,8 +111,9 @@ export default function RegisterPage() {
         const res = await policyService.quote({
           zone_id: formData.zone_id,
           platform_type: formData.platform_type,
-          shifts: formData.shifts,
+          shifts: DEFAULT_SHIFTS,
         });
+
         if (isMounted) {
           setQuote(res.data);
         }
@@ -150,12 +132,7 @@ export default function RegisterPage() {
       isMounted = false;
       window.clearTimeout(timer);
     };
-  }, [
-    formData.platform_type,
-    formData.shifts,
-    formData.zone_id,
-    zones,
-  ]);
+  }, [formData.platform_type, formData.zone_id]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -165,9 +142,13 @@ export default function RegisterPage() {
     try {
       const nextSession = await registerWorker({
         ...formData,
-        phone: formData.phone.trim(),
-        upi_id: formData.upi_id.trim(),
         name: formData.name.trim(),
+        phone: formData.phone.trim(),
+        pancard: formData.pancard.trim().toUpperCase(),
+        aadhaar: formData.aadhaar.trim(),
+        email: formData.email.trim(),
+        upi_id: '',
+        shifts: DEFAULT_SHIFTS,
       });
 
       navigate(nextSession?.worker?.id ? '/profile' : '/', { replace: true });
@@ -179,68 +160,60 @@ export default function RegisterPage() {
   };
 
   const selectedZone = zones.find((zone) => zone.id === formData.zone_id);
-  const primaryShiftForecast =
-    quote?.shift_forecasts?.find((forecast) => forecast.shift === quote?.recommended_shift) ||
-    quote?.shift_forecasts?.[0] ||
-    null;
+  const primaryShiftForecast = quote?.shift_forecasts?.[0] || null;
 
   return (
-    <main className="clean-page clean-auth-page">
-      <section className="clean-auth-grid">
-        <div className="clean-auth-copy">
-          <span className="clean-eyebrow">WORKER ONBOARDING</span>
-          <h1 className="clean-auth-title">Register a Blinkit partner profile.</h1>
-          <p className="clean-auth-text">
-            One registration creates the worker record, runs the pricing model, and activates the
-            first weekly policy immediately.
+    <main className="ek-page-shell ek-section-stack">
+      <section className="ek-auth-layout">
+        <div className="ek-panel ek-panel--feature">
+          <span className="ek-kicker">Create your profile</span>
+          <h1 className="ek-page-title">Register with only the details needed to start cover.</h1>
+          <p className="ek-page-copy">
+            Enter your identity and contact details, choose your organisation and work zone, and
+            preview your first weekly estimate.
           </p>
 
-          <div className="clean-auth-badges">
-            <span className="clean-pill">Live policy creation</span>
-            <span className="clean-pill">Zone aware premium</span>
-            <span className="clean-pill">Instant dashboard access</span>
+          <div className="ek-inline-list">
+            <span>Simple registration</span>
+            <span>Work zone based</span>
+            <span>Weekly estimate</span>
           </div>
 
-          <div className="clean-auth-summary">
-            <div className="clean-summary-card">
-              <span>Step 1</span>
-              <strong>Profile</strong>
-              <p>Name, phone, UPI, and worker type.</p>
+          <div className="ek-summary-grid ek-summary-grid--three">
+            <div className="ek-summary-card">
+              <span className="ek-label">Identity</span>
+              <strong>Basic verification</strong>
+              <p>Name, PAN card, Aadhaar, and email stay together in one section.</p>
             </div>
-            <div className="clean-summary-card">
-              <span>Step 2</span>
-              <strong>ML pricing</strong>
-              <p>The earnings model estimates shift income and payout floor.</p>
+            <div className="ek-summary-card">
+              <span className="ek-label">Organisation</span>
+              <strong>Choose your platform</strong>
+              <p>Pick Blinkit, Zepto, or Uber Eats for your registration.</p>
             </div>
-            <div className="clean-summary-card">
-              <span>Step 3</span>
-              <strong>Zone</strong>
-              <p>Choose the delivery zone the model should track.</p>
-            </div>
-            <div className="clean-summary-card">
-              <span>Step 4</span>
-              <strong>Policy</strong>
-              <p>Auto-create the first weekly cover immediately.</p>
+            <div className="ek-summary-card">
+              <span className="ek-label">First estimate</span>
+              <strong>See your first week</strong>
+              <p>Preview the starting premium and hourly support level before you continue.</p>
             </div>
           </div>
         </div>
 
-        <div className="clean-auth-panel">
-          <form className="clean-form-card" onSubmit={handleSubmit}>
-            <div className="clean-form-head">
-              <span className="clean-status-tag">
+        <div className="ek-auth-aside">
+          <form className="ek-panel ek-form" onSubmit={handleSubmit}>
+            <div className="ek-card-head">
+              <span className="ek-status-pill">
                 <ShieldCheck size={14} />
-                Secure onboarding
+                Secure registration
               </span>
-              <span className="clean-clock">Prototype flow</span>
+              <span className="ek-inline-note">Worker registration</span>
             </div>
 
-            {error ? <div className="clean-form-alert">{error}</div> : null}
+            {error ? <div className="ek-form-alert">{error}</div> : null}
 
-            <label className="clean-field">
-              <span>
+            <label className="ek-field">
+              <span className="ek-label">
                 <UserRound size={14} />
-                Full name
+                Driver name
               </span>
               <input
                 type="text"
@@ -250,9 +223,9 @@ export default function RegisterPage() {
               />
             </label>
 
-            <div className="clean-field-grid">
-              <label className="clean-field">
-                <span>
+            <div className="ek-field-grid">
+              <label className="ek-field">
+                <span className="ek-label">
                   <Phone size={14} />
                   Phone number
                 </span>
@@ -264,25 +237,70 @@ export default function RegisterPage() {
                 />
               </label>
 
-              <label className="clean-field">
-                <span>
-                  <Wallet size={14} />
-                  UPI ID
+              <label className="ek-field">
+                <span className="ek-label">
+                  <Mail size={14} />
+                  Email ID
                 </span>
                 <input
-                  type="text"
-                  value={formData.upi_id}
-                  onChange={(event) => updateField('upi_id', event.target.value)}
-                  placeholder="ravi@upi"
+                  type="email"
+                  value={formData.email}
+                  onChange={(event) => updateField('email', event.target.value)}
+                  placeholder="ravi@example.com"
                 />
               </label>
             </div>
 
-            <div className="clean-field-grid">
-              <label className="clean-field">
-                <span>
+            <div className="ek-field-grid">
+              <label className="ek-field">
+                <span className="ek-label">
+                  <CreditCard size={14} />
+                  PAN card
+                </span>
+                <input
+                  type="text"
+                  value={formData.pancard}
+                  onChange={(event) => updateField('pancard', event.target.value.toUpperCase())}
+                  placeholder="ABCDE1234F"
+                />
+              </label>
+
+              <label className="ek-field">
+                <span className="ek-label">
+                  <ShieldCheck size={14} />
+                  Aadhaar
+                </span>
+                <input
+                  type="text"
+                  value={formData.aadhaar}
+                  onChange={(event) => updateField('aadhaar', event.target.value)}
+                  placeholder="1234 5678 9012"
+                />
+              </label>
+            </div>
+
+            <div className="ek-field-grid">
+              <label className="ek-field">
+                <span className="ek-label">
+                  <Building2 size={14} />
+                  Organisation
+                </span>
+                <select
+                  value={formData.platform_type}
+                  onChange={(event) => updateField('platform_type', event.target.value)}
+                >
+                  {ORG_OPTIONS.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="ek-field">
+                <span className="ek-label">
                   <MapPin size={14} />
-                  Zone
+                  Work zone
                 </span>
                 <select
                   value={formData.zone_id}
@@ -295,161 +313,92 @@ export default function RegisterPage() {
                   ))}
                 </select>
               </label>
-
-              <label className="clean-field">
-                <span>
-                  <Briefcase size={14} />
-                  Area type
-                </span>
-                <select
-                  value={formData.area_type}
-                  onChange={(event) => updateField('area_type', event.target.value)}
-                >
-                  {AREA_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-
-            <div className="clean-field-grid">
-              <label className="clean-field">
-                <span>
-                  <Briefcase size={14} />
-                  Zone area
-                </span>
-                <input
-                  type="text"
-                  value={(selectedZone?.default_area_type || formData.area_type).replace('_', ' ')}
-                  readOnly
-                />
-              </label>
-
-              <label className="clean-field">
-                <span>
-                  <Briefcase size={14} />
-                  Platform
-                </span>
-                <input type="text" value={formData.platform_type} readOnly />
-              </label>
-            </div>
-
-            <div className="clean-shift-stack">
-              <span className="clean-field-label">
-                <Zap size={14} />
-                Shifts
-              </span>
-              <div className="clean-chip-grid">
-                {SHIFT_OPTIONS.map((shift) => (
-                  <button
-                    key={shift}
-                    type="button"
-                    className={`clean-chip ${formData.shifts.includes(shift) ? 'is-active' : ''}`}
-                    onClick={() => toggleShift(shift)}
-                  >
-                    {shift}
-                  </button>
-                ))}
-              </div>
             </div>
 
             <button
               type="submit"
-              className="clean-primary-button clean-form-button"
+              className="ek-button ek-button--primary ek-button--full"
               disabled={
                 isLoading ||
                 !formData.name ||
                 !formData.phone ||
-                !formData.upi_id ||
-                !formData.zone_id
+                !formData.pancard ||
+                !formData.aadhaar ||
+                !formData.email ||
+                !formData.zone_id ||
+                !formData.platform_type
               }
             >
               {isLoading ? <Loader2 size={16} className="clean-spin" /> : <Sparkles size={16} />}
-              Create profile
+              Create driver profile
               <ArrowRight size={16} />
             </button>
 
-            <p className="clean-form-footnote">
-              Already registered? <Link to="/login">Log in here</Link>.
+            <p className="ek-support-note">
+              Already registered? <Link to="/login">Sign in here</Link>.
             </p>
           </form>
 
-          <aside className="clean-side-card">
-            <span className="clean-eyebrow">LIVE PREVIEW</span>
-            <h2 className="clean-side-title">{formData.name || 'Worker profile'}</h2>
-            <p className="clean-side-text">
+          <aside className="ek-panel ek-panel--soft">
+            <span className="ek-kicker">Estimated first week</span>
+            <h2 className="ek-side-title">{formData.name || 'New driver profile'}</h2>
+            <p className="ek-support-note">
               {selectedZone
                 ? `${selectedZone.name}, ${selectedZone.city}`
-                : 'Select a zone to see the first policy context.'}
+                : 'Choose a work zone to preview the first estimate.'}
             </p>
 
-            <div className="clean-preview-grid">
+            <div className="ek-preview-grid">
               <div>
-                <span>Zone risk</span>
+                <span className="ek-label">Organisation</span>
+                <strong>{formData.platform_type}</strong>
+              </div>
+              <div>
+                <span className="ek-label">Weekly premium</span>
+                <strong>
+                  {quote ? formatCurrency(quote.premium_amount) : isQuoteLoading ? 'Updating...' : 'Select a zone'}
+                </strong>
+              </div>
+              <div>
+                <span className="ek-label">Hourly support</span>
+                <strong>{quote ? formatCurrency(quote.hourly_income_floor) : 'N/A'}</strong>
+              </div>
+              <div>
+                <span className="ek-label">Zone score</span>
                 <strong>
                   {quote
                     ? `${formatNumber((quote.risk_score || 0) * 100, 0)} / 100`
                     : selectedZone?.base_risk_score?.toFixed?.(1) || '0.0'}
                 </strong>
               </div>
-              <div>
-                <span>Weekly premium</span>
-                <strong>{quote ? formatCurrency(quote.premium_amount) : 'Loading'}</strong>
+            </div>
+
+            <div className="ek-detail-list">
+              <div className="ek-detail-row">
+                <strong>Estimate type</strong>
+                <span>{primaryShiftForecast ? 'Standard shift estimate' : 'Waiting for a work zone'}</span>
               </div>
-              <div>
-                <span>Shift earning</span>
-                <strong>
-                  {primaryShiftForecast
-                    ? formatCurrency(primaryShiftForecast.expected_shift_earning)
-                    : 'N/A'}
-                </strong>
+              <div className="ek-detail-row">
+                <strong>Expected daily income</strong>
+                <span>{quote ? formatCurrency(quote.expected_daily_earning) : 'N/A'}</span>
               </div>
-              <div>
-                <span>Hourly floor</span>
-                <strong>{quote ? formatCurrency(quote.hourly_income_floor) : 'N/A'}</strong>
+              <div className="ek-detail-row">
+                <strong>Expected weekly support</strong>
+                <span>{quote ? formatCurrency(quote.expected_weekly_loss) : 'N/A'}</span>
+              </div>
+              <div className="ek-detail-row">
+                <strong>Estimate shift</strong>
+                <span>Evening</span>
               </div>
             </div>
 
-            <div className="clean-mini-row clean-mini-row--stacked">
-              <span>
-                {quote?.model_enabled ? 'Random Forest model is live' : 'Formula fallback is active'}
-              </span>
-              <span>
-                {quote
-                  ? `${formData.shifts.length} shift${formData.shifts.length > 1 ? 's' : ''} quoted for this worker`
-                  : 'Preparing quote'}
-              </span>
-              <span>
-                {quote
-                  ? `${formatCurrency(quote.expected_weekly_loss)} expected weekly loss`
-                  : 'Policy created on success'}
-              </span>
-            </div>
-
-            {isQuoteLoading ? (
-              <p className="clean-side-text">Refreshing onboarding quote...</p>
-            ) : quote ? (
-              <div className="clean-detail-stack">
-                <div className="clean-detail-row clean-detail-row--profile">
-                  <strong>Pricing mode</strong>
-                  <span>{quote.pricing_mode.replace('_', ' ')}</span>
-                </div>
-                <div className="clean-detail-row clean-detail-row--profile">
-                  <strong>Recommended shift</strong>
-                  <span>{quote.recommended_shift}</span>
-                </div>
-                <div className="clean-detail-row clean-detail-row--profile">
-                  <strong>Daily cover basis</strong>
-                  <span>{formatCurrency(quote.expected_daily_earning)}</span>
-                </div>
-                <div className="clean-detail-row clean-detail-row--profile">
-                  <strong>Weekly earning forecast</strong>
-                  <span>{formatCurrency(quote.expected_weekly_earning)}</span>
-                </div>
-              </div>
-            ) : null}
+            <p className="ek-support-note">
+              {isQuoteLoading
+                ? 'Refreshing your estimate...'
+                : quote
+                  ? 'The estimate updates when the organisation or work zone changes.'
+                  : 'We will prepare the first estimate once a work zone is selected.'}
+            </p>
           </aside>
         </div>
       </section>

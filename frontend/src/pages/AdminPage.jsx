@@ -1,36 +1,42 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import {
-  AlertTriangle,
-  Loader2,
-  ShieldCheck,
-  Users,
-  Wallet,
-} from 'lucide-react';
+import { Loader2, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { analyticsService, claimService, payoutService, triggerService, workerService } from '../services/api';
-import { formatCurrency, formatDateTime, formatNumber, formatPercent } from '../utils/formatters';
+import {
+  analyticsService,
+  claimService,
+  payoutService,
+  triggerService,
+  workerService,
+} from '../services/api';
+import {
+  formatCurrency,
+  formatDateTime,
+  formatLabel,
+  formatNumber,
+  formatPercent,
+} from '../utils/formatters';
 
 function MetricCard({ label, value, note }) {
   return (
-    <div className="clean-metric-card">
-      <span className="clean-metric-label">{label}</span>
-      <strong className="clean-metric-value">{value}</strong>
-      {note ? <p className="clean-metric-note">{note}</p> : null}
+    <div className="ek-metric-card">
+      <span className="ek-metric-label">{label}</span>
+      <strong className="ek-metric-value">{value}</strong>
+      {note ? <p className="ek-metric-note">{note}</p> : null}
     </div>
   );
 }
 
-function SimpleListRow({ title, value, note, badge }) {
+function ListRow({ title, note, value, badge }) {
   return (
-    <div className="clean-list-row">
-      <div>
-        <strong>{title}</strong>
-        <p>{note}</p>
+    <div className="ek-list-row">
+      <div className="ek-list-row-main">
+        <strong className="ek-list-title">{title}</strong>
+        <p className="ek-list-copy">{note}</p>
       </div>
-      <div className="clean-list-meta">
-        <span>{value}</span>
-        {badge ? <em>{badge}</em> : null}
+      <div className="ek-list-meta">
+        <span className="ek-list-value">{value}</span>
+        {badge ? <em className="ek-list-badge">{badge}</em> : null}
       </div>
     </div>
   );
@@ -71,7 +77,7 @@ export default function AdminPage() {
         setPayouts(Array.isArray(payoutsRes.data) ? payoutsRes.data : []);
         setTriggers(Array.isArray(triggersRes.data) ? triggersRes.data : []);
       } catch (err) {
-        setError('Could not load the admin console right now.');
+        setError('Could not load the portfolio overview right now.');
       } finally {
         setIsLoading(false);
         setIsRefreshing(false);
@@ -84,117 +90,131 @@ export default function AdminPage() {
     return () => window.clearInterval(timer);
   }, [isAdmin]);
 
+  useEffect(() => {
+    document.title = 'EasyKavach | Portfolio';
+  }, []);
+
   if (!isAdmin) {
     return <Navigate to="/login" replace />;
   }
 
   if (isLoading) {
     return (
-      <main className="clean-page clean-loading-page">
-        <Loader2 className="clean-spin" size={18} />
-        Loading admin console...
+      <main className="ek-page-shell">
+        <div className="ek-loading-state">
+          <Loader2 className="clean-spin" size={18} />
+          Loading the portfolio overview...
+        </div>
       </main>
     );
   }
 
-  const heatmaps = overview ? overview.zone_heatmaps || [] : [];
+  const heatmaps = overview?.zone_heatmaps || [];
   const topWorkers = workers.slice(0, 6);
   const recentClaims = claims.slice(0, 6);
   const recentPayouts = payouts.slice(0, 6);
   const activeTriggers = triggers.slice(0, 5);
 
   return (
-    <main className="clean-page clean-admin-page">
-      <section className="clean-auth-grid">
-        <div className="clean-auth-copy">
-          <span className="clean-eyebrow">ADMIN CONSOLE</span>
-          <h1 className="clean-auth-title">System overview and portfolio control.</h1>
-          <p className="clean-auth-text">
-            The insurer view keeps the portfolio, zone risk, live triggers, claims, and payouts in
-            one calm control room.
+    <main className="ek-page-shell ek-section-stack">
+      <section className="ek-content-grid ek-content-grid--hero">
+        <div className="ek-panel ek-panel--feature">
+          <span className="ek-kicker">Portfolio overview</span>
+          <h1 className="ek-page-title">Cover, alerts, claims, and payouts in one place.</h1>
+          <p className="ek-page-copy">
+            Use this view to track workers, active alerts, claims, and payouts across the portfolio.
           </p>
 
-          <div className="clean-auth-badges">
-            <span className="clean-pill">Portfolio risk</span>
-            <span className="clean-pill">Live triggers</span>
-            <span className="clean-pill">Claims and payouts</span>
+          <div className="ek-inline-list">
+            <span>{formatNumber(overview?.total_workers ?? workers.length)} members</span>
+            <span>{formatNumber(overview?.active_policies_count ?? 0)} active covers</span>
+            <span>{isRefreshing ? 'Refreshing now' : 'Live portfolio view'}</span>
           </div>
         </div>
 
-        <div className="clean-auth-panel">
-          <div className="clean-form-head">
-            <span className="clean-status-tag">
+        <aside className="ek-panel">
+          <div className="ek-card-head">
+            <span className="ek-status-pill">
               <ShieldCheck size={14} />
-              Admin unlocked
+              Team access
             </span>
-            <span className="clean-clock">{isRefreshing ? 'Refreshing' : 'Live view'}</span>
+            <span className="ek-inline-note">
+              Loss ratio {formatPercent((overview?.loss_ratio || 0) * 100, 1)}
+            </span>
           </div>
 
-          <div className="clean-status-grid">
-            <div className="clean-status-row">
-              <span>Workers</span>
-              <strong>{overview?.total_workers ?? workers.length}</strong>
+          <div className="ek-detail-list">
+            <div className="ek-detail-row">
+              <strong>Members covered</strong>
+              <span>{formatNumber(overview?.total_workers ?? workers.length)}</span>
             </div>
-            <div className="clean-status-row">
-              <span>Active policies</span>
-              <strong>{overview?.active_policies_count ?? 0}</strong>
+            <div className="ek-detail-row">
+              <strong>Active covers</strong>
+              <span>{formatNumber(overview?.active_policies_count ?? 0)}</span>
             </div>
-            <div className="clean-status-row">
-              <span>Total payouts</span>
-              <strong>{formatCurrency(overview?.total_payouts_amount)}</strong>
+            <div className="ek-detail-row">
+              <strong>Support paid</strong>
+              <span>{formatCurrency(overview?.total_payouts_amount)}</span>
             </div>
-            <div className="clean-status-row">
-              <span>Loss ratio</span>
-              <strong>{formatPercent((overview?.loss_ratio || 0) * 100, 1)}</strong>
+            <div className="ek-detail-row">
+              <strong>Alerts right now</strong>
+              <span>{formatNumber(activeTriggers.length)}</span>
             </div>
           </div>
-        </div>
+        </aside>
       </section>
 
-      {error ? <div className="clean-form-alert clean-form-alert--wide">{error}</div> : null}
+      {error ? <div className="ek-form-alert">{error}</div> : null}
 
-      <section className="clean-facts-grid clean-facts-grid--admin">
+      <section className="ek-metrics-grid">
         <MetricCard
-          label="Claims processed"
+          label="Members covered"
+          value={formatNumber(overview?.total_workers ?? workers.length)}
+          note="Total members currently visible in the portfolio."
+        />
+        <MetricCard
+          label="Claims handled"
           value={formatNumber(claims.length)}
-          note="All claims currently visible in the system."
+          note="All claims currently loaded in this view."
         />
         <MetricCard
-          label="Fraud rate"
-          value={formatPercent((overview?.fraud_rate || 0) * 100, 1)}
-          note="Portfolio-level fraud signal."
-        />
-        <MetricCard
-          label="Active triggers"
-          value={formatNumber(activeTriggers.length)}
-          note="Live geo-fenced disruption signals."
-        />
-        <MetricCard
-          label="Payouts"
+          label="Payouts sent"
           value={formatNumber(payouts.length)}
-          note="Settlements already moved through the rail."
+          note="Support transfers already created."
+        />
+        <MetricCard
+          label="Zones tracked"
+          value={formatNumber(heatmaps.length)}
+          note="Zones with live portfolio visibility."
         />
       </section>
 
-      <section className="clean-two-up">
-        <article className="clean-card">
-          <span className="clean-eyebrow">ZONE RISK</span>
-          <div className="clean-zone-grid">
+      <section className="ek-content-grid">
+        <article className="ek-panel">
+          <div className="ek-section-intro">
+            <div>
+              <span className="ek-kicker">Zone activity</span>
+              <h2>Where the portfolio is most active</h2>
+              <p>Disruption intensity and claim volume across tracked zones.</p>
+            </div>
+          </div>
+
+          <div className="ek-zone-grid">
             {heatmaps.slice(0, 6).map((zone) => {
               const riskLevel = Math.max(0, Math.min(1, Number(zone.risk_score || 0)));
 
               return (
-                <div className="clean-zone-card" key={zone.zone_id}>
-                  <div className="clean-zone-head">
+                <div className="ek-zone-card" key={zone.zone_id}>
+                  <div className="ek-zone-head">
                     <strong>{zone.zone_name}</strong>
                     <span>{formatPercent(riskLevel * 100, 0)}</span>
                   </div>
-                  <div className="clean-zone-bar">
-                    <div className="clean-zone-fill" style={{ width: `${riskLevel * 100}%` }} />
+                  <div className="ek-zone-bar">
+                    <div className="ek-zone-fill" style={{ width: `${riskLevel * 100}%` }} />
                   </div>
-                  <div className="clean-zone-meta">
-                    <span>{zone.active_disruptions_count} disruptions</span>
-                    <span>{zone.total_claims_count} claims</span>
+                  <div className="ek-zone-meta">
+                    <span>{formatNumber(zone.active_disruptions_count)} active disruptions</span>
+                    <span>{formatNumber(zone.total_claims_count)} claims</span>
                   </div>
                 </div>
               );
@@ -202,108 +222,136 @@ export default function AdminPage() {
           </div>
         </article>
 
-        <article className="clean-card">
-          <span className="clean-eyebrow">LIVE TRIGGERS</span>
-          <div className="clean-list-card">
+        <article className="ek-panel ek-panel--soft">
+          <div className="ek-section-intro">
+            <div>
+              <span className="ek-kicker">Active alerts</span>
+              <h2>What needs attention right now</h2>
+              <p>Current disruption alerts are grouped in one place for faster scanning.</p>
+            </div>
+          </div>
+
+          <div className="ek-list-stack">
             {activeTriggers.length ? (
               activeTriggers.map((trigger) => (
-                <SimpleListRow
+                <ListRow
                   key={trigger.id}
-                  title={String(trigger.trigger_type).replace('_', ' ')}
-                  note={`${trigger.zone_id?.replace('_', ' ') || 'Unknown zone'} · ${formatDateTime(trigger.created_at)}`}
-                  value={trigger.status || 'ACTIVE'}
-                  badge={trigger.severity || 'HIGH'}
+                  title={formatLabel(trigger.trigger_type)}
+                  note={`${formatLabel(trigger.zone_id || 'Unknown zone')} / ${formatDateTime(trigger.created_at)}`}
+                  value={formatLabel(trigger.status || 'Active')}
+                  badge={formatLabel(trigger.severity || 'High')}
                 />
               ))
             ) : (
-              <p className="clean-empty-state">No active trigger events right now.</p>
+              <p className="ek-empty-state">No active alerts right now.</p>
             )}
           </div>
         </article>
       </section>
 
-      <section className="clean-two-up">
-        <article className="clean-card">
-          <span className="clean-eyebrow">WORKER ROSTER</span>
-          <div className="clean-list-card">
+      <section className="ek-content-grid">
+        <article className="ek-panel">
+          <div className="ek-section-intro">
+            <div>
+              <span className="ek-kicker">Member activity</span>
+              <h2>Recently active members</h2>
+              <p>See who is online, where they work, and their selected shifts.</p>
+            </div>
+          </div>
+
+          <div className="ek-list-stack">
             {topWorkers.length ? (
               topWorkers.map((worker) => (
-                <SimpleListRow
+                <ListRow
                   key={worker.id}
                   title={worker.name}
-                  note={`${String(worker.zone_id || '').replace('_', ' ')} · ${worker.platform_type}`}
+                  note={`${formatLabel(worker.zone_id)} / ${formatLabel(worker.platform_type)}`}
                   value={worker.is_online ? 'Online' : 'Offline'}
-                  badge={Array.isArray(worker.shifts) ? worker.shifts.join(' / ') : 'No shifts'}
+                  badge={
+                    Array.isArray(worker.shifts) && worker.shifts.length
+                      ? worker.shifts.map((shift) => formatLabel(shift)).join(', ')
+                      : 'No shifts'
+                  }
                 />
               ))
             ) : (
-              <p className="clean-empty-state">No workers in the roster yet.</p>
+              <p className="ek-empty-state">No member activity to show yet.</p>
             )}
           </div>
         </article>
 
-        <article className="clean-card">
-          <span className="clean-eyebrow">RECENT PAYOUTS</span>
-          <div className="clean-list-card">
+        <article className="ek-panel">
+          <div className="ek-section-intro">
+            <div>
+              <span className="ek-kicker">Recent payouts</span>
+              <h2>Latest support transfers</h2>
+              <p>The newest payouts remain visible here with amount, channel, and current status.</p>
+            </div>
+          </div>
+
+          <div className="ek-list-stack">
             {recentPayouts.length ? (
               recentPayouts.map((payout) => (
-                <SimpleListRow
+                <ListRow
                   key={payout.id}
                   title={formatCurrency(payout.amount)}
                   note={formatDateTime(payout.created_at)}
-                  value={payout.channel || 'UPI'}
-                  badge={payout.status || 'settled'}
+                  value={formatLabel(payout.channel || 'UPI')}
+                  badge={formatLabel(payout.status || 'Settled')}
                 />
               ))
             ) : (
-              <p className="clean-empty-state">No payouts to show yet.</p>
+              <p className="ek-empty-state">No payouts to show yet.</p>
             )}
           </div>
         </article>
       </section>
 
-      <section className="clean-two-up">
-        <article className="clean-card">
-          <span className="clean-eyebrow">RECENT CLAIMS</span>
-          <div className="clean-list-card">
+      <section className="ek-content-grid">
+        <article className="ek-panel">
+          <div className="ek-section-intro">
+            <div>
+              <span className="ek-kicker">Recent claims</span>
+              <h2>Latest claim records</h2>
+              <p>Latest claims across the portfolio.</p>
+            </div>
+          </div>
+
+          <div className="ek-list-stack">
             {recentClaims.length ? (
               recentClaims.map((claim) => (
-                <SimpleListRow
+                <ListRow
                   key={claim.id}
-                  title={String(claim.disruption_type).replace('_', ' ')}
+                  title={formatLabel(claim.disruption_type)}
                   note={formatDateTime(claim.created_at)}
                   value={formatCurrency(claim.adjusted_payout)}
-                  badge={claim.status}
+                  badge={formatLabel(claim.status)}
                 />
               ))
             ) : (
-              <p className="clean-empty-state">No claims have been created yet.</p>
+              <p className="ek-empty-state">No claims have been created yet.</p>
             )}
           </div>
         </article>
 
-        <article className="clean-card">
-          <span className="clean-eyebrow">CLAIM MIX</span>
-          <div className="clean-chip-grid clean-chip-grid--wrap">
+        <article className="ek-panel ek-panel--soft">
+          <div className="ek-section-intro">
+            <div>
+              <span className="ek-kicker">Claim mix</span>
+              <h2>How claims are distributed</h2>
+              <p>Main disruption types currently recorded across the portfolio.</p>
+            </div>
+          </div>
+
+          <div className="ek-partner-list">
             {Object.entries(overview?.claims_by_type || {}).map(([type, count]) => (
-              <span className="clean-pill" key={type}>
-                {String(type).replace('_', ' ')} · {count}
+              <span className="ek-partner-pill" key={type}>
+                {formatLabel(type)} / {count}
               </span>
             ))}
             {!Object.keys(overview?.claims_by_type || {}).length ? (
-              <span className="clean-empty-state">No claim mix yet.</span>
+              <span className="ek-empty-state">No claim mix data yet.</span>
             ) : null}
-          </div>
-          <div className="clean-mini-row clean-mini-row--stacked">
-            <span>
-              <AlertTriangle size={12} /> Manual review queue stays visible
-            </span>
-            <span>
-              <Users size={12} /> Zone-based portfolio control
-            </span>
-            <span>
-              <Wallet size={12} /> Payout stream is traceable
-            </span>
           </div>
         </article>
       </section>

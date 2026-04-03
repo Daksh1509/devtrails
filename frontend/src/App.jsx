@@ -4,6 +4,7 @@ import AmbientBackground from './components/AmbientBackground';
 import Navbar from './components/Navbar';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import AdminPage from './pages/AdminPage';
+import CashPayoutPage from './pages/CashPayoutPage';
 import EasyKavachDashboard from './pages/EasyKavachDashboard';
 import LoginPage from './pages/LoginPage';
 import ProfilePage from './pages/ProfilePage';
@@ -25,7 +26,7 @@ function RequireRole({ role, children }) {
 
 function AppRoutes() {
   return (
-    <div className="clean-app">
+    <div className="ek-app">
       <AmbientBackground />
       <Navbar />
       <Routes>
@@ -38,6 +39,14 @@ function AppRoutes() {
           element={
             <RequireRole role="worker">
               <ProfilePage />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/cash-payout"
+          element={
+            <RequireRole role="worker">
+              <CashPayoutPage />
             </RequireRole>
           }
         />

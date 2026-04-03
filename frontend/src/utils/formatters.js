@@ -42,3 +42,15 @@ export function formatPercent(value, digits = 1) {
   return `${Number(value || 0).toFixed(digits)}%`;
 }
 
+export function formatLabel(value) {
+  if (!value) {
+    return 'N/A';
+  }
+
+  return String(value)
+    .replace(/_/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase()
+    .replace(/\b\w/g, (match) => match.toUpperCase());
+}

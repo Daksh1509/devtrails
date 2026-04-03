@@ -92,7 +92,7 @@ export function AuthProvider({ children }) {
 
   const loginAdmin = async (code) => {
     if (String(code).trim() !== ADMIN_CODE) {
-      throw new Error('Invalid admin access code.');
+      throw new Error('Invalid access code.');
     }
 
     const nextSession = {

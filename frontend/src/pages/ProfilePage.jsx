@@ -1,33 +1,52 @@
 import React, { useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
-import {
-  Activity,
-  Clock3,
-  Loader2,
-  Power,
-  ShieldCheck,
-  TrendingUp,
-  Wallet,
-} from 'lucide-react';
+import { Link, Navigate } from 'react-router-dom';
+import { Loader2, Power, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { analyticsService, claimService, payoutService, policyService, workerService } from '../services/api';
-import { formatCurrency, formatDate, formatDateTime, formatNumber, formatPercent } from '../utils/formatters';
+import {
+  analyticsService,
+  claimService,
+  payoutService,
+  policyService,
+  workerService,
+} from '../services/api';
+import {
+  formatCurrency,
+  formatDate,
+  formatDateTime,
+  formatLabel,
+  formatPercent,
+} from '../utils/formatters';
 
 function MetricCard({ label, value, note }) {
   return (
-    <div className="clean-metric-card">
-      <span className="clean-metric-label">{label}</span>
-      <strong className="clean-metric-value">{value}</strong>
-      {note ? <p className="clean-metric-note">{note}</p> : null}
+    <div className="ek-metric-card">
+      <span className="ek-metric-label">{label}</span>
+      <strong className="ek-metric-value">{value}</strong>
+      {note ? <p className="ek-metric-note">{note}</p> : null}
     </div>
   );
 }
 
-function Row({ label, value }) {
+function DetailRow({ label, value }) {
   return (
-    <div className="clean-detail-row clean-detail-row--profile">
+    <div className="ek-detail-row">
       <strong>{label}</strong>
       <span>{value}</span>
+    </div>
+  );
+}
+
+function ActivityRow({ title, note, value, badge }) {
+  return (
+    <div className="ek-list-row">
+      <div className="ek-list-row-main">
+        <strong className="ek-list-title">{title}</strong>
+        <p className="ek-list-copy">{note}</p>
+      </div>
+      <div className="ek-list-meta">
+        <span className="ek-list-value">{value}</span>
+        {badge ? <em className="ek-list-badge">{badge}</em> : null}
+      </div>
     </div>
   );
 }
@@ -41,7 +60,6 @@ export default function ProfilePage() {
   const [policies, setPolicies] = useState([]);
   const [payouts, setPayouts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState('');
   const [isToggling, setIsToggling] = useState(false);
 
@@ -51,7 +69,6 @@ export default function ProfilePage() {
     }
 
     const fetchProfile = async () => {
-      setIsRefreshing(true);
       setError('');
 
       try {
@@ -69,10 +86,9 @@ export default function ProfilePage() {
         setPolicies(Array.isArray(policiesRes.data) ? policiesRes.data : []);
         setPayouts(Array.isArray(payoutsRes.data) ? payoutsRes.data : []);
       } catch (err) {
-        setError('Could not load the worker profile right now.');
+        setError('Could not load your cover right now.');
       } finally {
         setIsLoading(false);
-        setIsRefreshing(false);
       }
     };
 
@@ -81,6 +97,10 @@ export default function ProfilePage() {
 
     return () => window.clearInterval(timer);
   }, [workerId]);
+
+  useEffect(() => {
+    document.title = 'EasyKavach | My Cover';
+  }, []);
 
   const handleToggleStatus = async () => {
     if (!workerId || !worker) {
@@ -93,7 +113,7 @@ export default function ProfilePage() {
       const res = await workerService.updateStatus(workerId, nextStatus);
       setWorker(res.data);
     } catch (err) {
-      setError('Could not update online status.');
+      setError('Could not update your availability right now.');
     } finally {
       setIsToggling(false);
     }
@@ -104,7 +124,14 @@ export default function ProfilePage() {
   }
 
   if (isLoading && !worker) {
-    return <main className="clean-page clean-loading-page">Loading profile...</main>;
+    return (
+      <main className="ek-page-shell">
+        <div className="ek-loading-state">
+          <Loader2 size={18} className="clean-spin" />
+          Loading your cover...
+        </div>
+      </main>
+    );
   }
 
   const primaryPolicy = policies[0];
@@ -112,164 +139,187 @@ export default function ProfilePage() {
   const recentPayouts = payouts.slice(0, 4);
 
   return (
-    <main className="clean-page clean-profile-page">
-      <section className="clean-profile-hero">
-        <div className="clean-profile-copy">
-          <span className="clean-eyebrow">WORKER PROFILE</span>
-          <h1 className="clean-auth-title">{worker?.name || 'Worker profile'}</h1>
-          <p className="clean-auth-text">
-            This view ties the live worker session to policy, claims, payouts, and the model
-            output that drives weekly cover.
+    <main className="ek-page-shell ek-section-stack">
+      <section className="ek-content-grid ek-content-grid--hero">
+        <div className="ek-panel ek-panel--feature">
+          <span className="ek-kicker">My cover</span>
+          <h1 className="ek-page-title">{worker?.name || 'Your EasyKavach profile'}</h1>
+          <p className="ek-page-copy">
+            See your weekly cover, current status, claims, and recent payouts in one place.
           </p>
-          <div className="clean-auth-badges">
-            <span className="clean-pill">{worker?.zone_id?.replace('_', ' ')}</span>
-            <span className="clean-pill">{worker?.platform_type}</span>
-            <span className="clean-pill">{worker?.is_online ? 'Online' : 'Offline'}</span>
+
+          <div className="ek-inline-list">
+            <span>{formatLabel(worker?.zone_id)}</span>
+            <span>{formatLabel(worker?.platform_type)}</span>
+            <span>{worker?.is_online ? 'Available for shifts' : 'Currently offline'}</span>
+          </div>
+
+          <div className="ek-button-row">
+            <Link to="/cash-payout" className="ek-button ek-button--primary">
+              View payout details
+            </Link>
           </div>
         </div>
 
-        <div className="clean-profile-hero-card">
-          <div className="clean-form-head">
-            <span className="clean-status-tag">
+        <aside className="ek-panel">
+          <div className="ek-card-head">
+            <span className="ek-status-pill">
               <ShieldCheck size={14} />
-              Session active
+              {worker?.is_online ? 'Available for shifts' : 'Currently offline'}
             </span>
-            <button className="clean-toggle-button" type="button" onClick={handleToggleStatus}>
+            <button type="button" className="ek-button ek-button--secondary" onClick={handleToggleStatus}>
               <Power size={14} />
-              {isToggling ? 'Updating' : worker?.is_online ? 'Go offline' : 'Go online'}
+              {isToggling
+                ? 'Updating...'
+                : worker?.is_online
+                  ? 'Pause availability'
+                  : 'Mark available'}
             </button>
           </div>
 
-          <div className="clean-status-grid">
-            <div className="clean-status-row">
-              <span>Registered</span>
-              <strong>{formatDate(worker?.registered_at)}</strong>
-            </div>
-            <div className="clean-status-row">
-              <span>Last active</span>
-              <strong>{formatDateTime(worker?.last_active_at)}</strong>
-            </div>
-            <div className="clean-status-row">
-              <span>Shifts</span>
-              <strong>{Array.isArray(worker?.shifts) ? worker.shifts.join(' / ') : 'N/A'}</strong>
-            </div>
-            <div className="clean-status-row">
-              <span>Area type</span>
-              <strong>{worker?.area_type?.replace('_', ' ')}</strong>
+          <div className="ek-detail-list">
+            <DetailRow label="Registered on" value={formatDate(worker?.registered_at)} />
+            <DetailRow label="Last active" value={formatDateTime(worker?.last_active_at)} />
+            <DetailRow
+              label="Usual shifts"
+              value={
+                Array.isArray(worker?.shifts) && worker.shifts.length
+                  ? worker.shifts.map((shift) => formatLabel(shift)).join(', ')
+                  : 'N/A'
+              }
+            />
+            <DetailRow label="Area type" value={formatLabel(worker?.area_type)} />
+          </div>
+        </aside>
+      </section>
+
+      {error ? <div className="ek-form-alert">{error}</div> : null}
+
+      <section className="ek-metrics-grid">
+        <MetricCard
+          label="Protected so far"
+          value={formatCurrency(analytics?.earnings_protected)}
+          note="Total support already credited to you."
+        />
+        <MetricCard
+          label="Typical shift income"
+          value={formatCurrency(analytics?.expected_shift_earning)}
+          note="A simple estimate for an active shift."
+        />
+        <MetricCard
+          label="Hourly baseline"
+          value={formatCurrency(analytics?.expected_hourly_wage)}
+          note="Used to understand your regular earning pace."
+        />
+        <MetricCard
+          label="Estimated support per hour"
+          value={formatCurrency(analytics?.predicted_risk_payout_estimate)}
+          note="The hourly cover used when a disruption qualifies."
+        />
+      </section>
+
+      <section className="ek-content-grid">
+        <article className="ek-panel">
+          <div className="ek-section-intro">
+            <div>
+              <span className="ek-kicker">This week</span>
+              <h2>Current policy</h2>
+              <p>The main details for your active weekly cover.</p>
             </div>
           </div>
-        </div>
-      </section>
 
-      {error ? <div className="clean-form-alert clean-form-alert--wide">{error}</div> : null}
-
-      <section className="clean-facts-grid clean-facts-grid--profile">
-        <MetricCard
-          label="Protected earnings"
-          value={formatCurrency(analytics?.earnings_protected)}
-          note="Total payouts credited to this worker."
-        />
-        <MetricCard
-          label="Expected shift earning"
-          value={formatCurrency(analytics?.expected_shift_earning)}
-          note="Model estimate for the active shift."
-        />
-        <MetricCard
-          label="Predicted hourly wage"
-          value={formatCurrency(analytics?.expected_hourly_wage)}
-          note="Derived from the shift model."
-        />
-        <MetricCard
-          label="Predicted payout"
-          value={formatCurrency(analytics?.predicted_risk_payout_estimate)}
-          note="Hourly disruption protection estimate."
-        />
-      </section>
-
-      <section className="clean-two-up">
-        <article className="clean-card">
-          <span className="clean-eyebrow">POLICY SNAPSHOT</span>
-          <div className="clean-detail-stack">
-            <Row label="Policy ID" value={primaryPolicy?.id || 'No policy yet'} />
-            <Row label="Status" value={primaryPolicy?.status || 'Pending'} />
-            <Row label="Week" value={`${formatDate(primaryPolicy?.week_start)} - ${formatDate(primaryPolicy?.week_end)}`} />
-            <Row label="Premium" value={formatCurrency(primaryPolicy?.premium_amount)} />
-            <Row label="Expected loss" value={formatCurrency(primaryPolicy?.expected_weekly_loss)} />
-            <Row
-              label="Risk score"
+          <div className="ek-detail-list">
+            <DetailRow label="Policy" value={primaryPolicy?.id || 'No active policy yet'} />
+            <DetailRow label="Status" value={formatLabel(primaryPolicy?.status || 'Pending')} />
+            <DetailRow
+              label="Cover period"
+              value={`${formatDate(primaryPolicy?.week_start)} to ${formatDate(primaryPolicy?.week_end)}`}
+            />
+            <DetailRow label="Weekly premium" value={formatCurrency(primaryPolicy?.premium_amount)} />
+            <DetailRow
+              label="Expected weekly support"
+              value={formatCurrency(primaryPolicy?.expected_weekly_loss)}
+            />
+            <DetailRow
+              label="Risk level"
               value={formatPercent((primaryPolicy?.risk_score || 0) * 100, 1)}
             />
           </div>
-          <div className="clean-mini-row clean-mini-row--stacked">
-            <span>
-              <Activity size={12} /> {analytics?.total_claims ?? 0} total claims
-            </span>
-            <span>
-              <Wallet size={12} /> {recentPayouts.length} recent payouts
-            </span>
-          </div>
         </article>
 
-        <article className="clean-card">
-          <span className="clean-eyebrow">MODEL SIGNALS</span>
-          <div className="clean-detail-stack">
-            <Row label="Active policy" value={analytics?.active_policy_id || 'None'} />
-            <Row label="Recent claims" value={recentClaims.length ? `${recentClaims.length} loaded` : 'No claims yet'} />
-            <Row label="Earnings protected" value={formatCurrency(analytics?.earnings_protected)} />
-            <Row label="Shift risk" value={formatNumber(analytics?.predicted_disruption_loss, 0)} />
+        <article className="ek-panel ek-panel--soft">
+          <div className="ek-section-intro">
+            <div>
+              <span className="ek-kicker">At a glance</span>
+              <h2>Coverage summary</h2>
+              <p>A quick summary of your recent activity and support history.</p>
+            </div>
           </div>
-          <div className="clean-mini-row clean-mini-row--stacked">
-            <span>
-              <TrendingUp size={12} /> Route-aware premium
-            </span>
-            <span>
-              <Clock3 size={12} /> Refreshes every 30s
-            </span>
+
+          <div className="ek-detail-list">
+            <DetailRow label="Work zone" value={formatLabel(worker?.zone_id)} />
+            <DetailRow label="Platform" value={formatLabel(worker?.platform_type)} />
+            <DetailRow label="Claims on record" value={String(analytics?.total_claims ?? 0)} />
+            <DetailRow label="Recent payouts" value={String(recentPayouts.length)} />
+          </div>
+
+          <div className="ek-inline-list">
+            <span>Refreshes automatically</span>
+            <span>Weekly cover stays visible</span>
+            <span>Payout history included</span>
           </div>
         </article>
       </section>
 
-      <section className="clean-two-up">
-        <article className="clean-card">
-          <span className="clean-eyebrow">RECENT CLAIMS</span>
-          <div className="clean-list-card">
+      <section className="ek-content-grid">
+        <article className="ek-panel">
+          <div className="ek-section-intro">
+            <div>
+              <span className="ek-kicker">Recent claims</span>
+              <h2>Latest claim activity</h2>
+              <p>Claims created from covered disruptions appear here.</p>
+            </div>
+          </div>
+
+          <div className="ek-list-stack">
             {recentClaims.length ? (
               recentClaims.map((claim) => (
-                <div className="clean-list-row" key={claim.id}>
-                  <div>
-                    <strong>{String(claim.disruption_type).replace('_', ' ')}</strong>
-                    <p>{formatDateTime(claim.created_at)}</p>
-                  </div>
-                  <div className="clean-list-meta">
-                    <span>{formatCurrency(claim.adjusted_payout)}</span>
-                    <em>{claim.status}</em>
-                  </div>
-                </div>
+                <ActivityRow
+                  key={claim.id}
+                  title={formatLabel(claim.disruption_type)}
+                  note={formatDateTime(claim.created_at)}
+                  value={formatCurrency(claim.adjusted_payout)}
+                  badge={formatLabel(claim.status)}
+                />
               ))
             ) : (
-              <p className="clean-empty-state">No claims yet. The page will populate as disruptions fire.</p>
+              <p className="ek-empty-state">No claims yet. This area will update automatically.</p>
             )}
           </div>
         </article>
 
-        <article className="clean-card">
-          <span className="clean-eyebrow">RECENT PAYOUTS</span>
-          <div className="clean-list-card">
+        <article className="ek-panel">
+          <div className="ek-section-intro">
+            <div>
+              <span className="ek-kicker">Recent payouts</span>
+              <h2>Support already sent</h2>
+              <p>Completed or in-progress payouts appear here.</p>
+            </div>
+          </div>
+
+          <div className="ek-list-stack">
             {recentPayouts.length ? (
               recentPayouts.map((payout) => (
-                <div className="clean-list-row" key={payout.id}>
-                  <div>
-                    <strong>{formatCurrency(payout.amount)}</strong>
-                    <p>{formatDateTime(payout.created_at)}</p>
-                  </div>
-                  <div className="clean-list-meta">
-                    <span>{payout.channel || 'UPI'}</span>
-                    <em>{payout.status || 'settled'}</em>
-                  </div>
-                </div>
+                <ActivityRow
+                  key={payout.id}
+                  title={formatCurrency(payout.amount)}
+                  note={formatDateTime(payout.created_at)}
+                  value={formatLabel(payout.channel || 'UPI')}
+                  badge={formatLabel(payout.status || 'Settled')}
+                />
               ))
             ) : (
-              <p className="clean-empty-state">No payouts are linked to this profile yet.</p>
+              <p className="ek-empty-state">No payouts are linked to this profile yet.</p>
             )}
           </div>
         </article>

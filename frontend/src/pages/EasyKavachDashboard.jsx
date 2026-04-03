@@ -1,65 +1,63 @@
 import React, { startTransition, useEffect, useState } from 'react';
 import { ArrowRight, ArrowUpRight, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import apiClient, { analyticsService, claimService } from '../services/api';
+import apiClient, { analyticsService } from '../services/api';
+import { formatCurrency, formatLabel } from '../utils/formatters';
 
 const FEATURE_STEPS = [
   {
     step: '01',
-    title: 'Register',
-    copy: 'Create a worker profile, choose a zone, and start a weekly policy.',
+    title: 'Create your profile',
+    copy: 'Add your details, choose the zone you work in, and preview your first week of cover.',
   },
   {
     step: '02',
-    title: 'Monitor',
-    copy: 'Weather, AQI, flood, and civic signals stay geo-fenced to the zone.',
+    title: 'We keep watch',
+    copy: 'Weather, air quality, and civic signals are monitored for the registered zone.',
   },
   {
     step: '03',
-    title: 'Approve',
-    copy: 'Eligibility and fraud checks run together when a trigger fires.',
-  },
-  {
-    step: '04',
-    title: 'Settle',
-    copy: 'The payout rail credits protected income without paperwork.',
+    title: 'Support arrives fast',
+    copy: 'If a covered disruption stops work, support is calculated and paid automatically.',
   },
 ];
 
-const PARTNERS = ['OPENWEATHER', 'OPEN-METEO', 'BLINKIT', 'RAZORPAY'];
+const COVERAGE_POINTS = [
+  {
+    title: 'Weather interruptions',
+    copy: 'Heavy rain, flooding, and extreme heat that pause normal delivery work.',
+  },
+  {
+    title: 'Air quality spikes',
+    copy: 'Unsafe AQI periods that make an outdoor shift unreasonable.',
+  },
+  {
+    title: 'Civic disruption',
+    copy: 'Bandhs, curfews, or local restrictions that block normal movement.',
+  },
+];
+
+const PARTNERS = ['Blinkit', 'OpenWeather', 'Open-Meteo', 'Razorpay'];
 
 const FALLBACK_DASHBOARD = {
   isLive: false,
   workerName: 'Ravi Kumar',
-  zone: 'KORAMANGALA BLR',
-  platform: 'BLINKIT',
+  zone: 'Koramangala, Bengaluru',
+  platform: 'Blinkit',
   protectedEarnings: 8450,
   expectedShiftEarning: 1320,
   hourlyCover: 240,
-  activeClaims: 12,
-  activePolicies: 112,
   alert: {
     active: true,
-    severity: 'HIGH',
-    zone: 'KORAMANGALA BLR',
-    message: 'SEVERE RAIN DETECTED - ZONE LOCKDOWN',
-    details: 'WEATHER 81MM/H // AQI 302 // AUTO SETTLEMENT READY',
+    title: 'Heavy rain watch in Koramangala, Bengaluru',
+    copy: 'Current weather conditions may interrupt active delivery shifts in this zone.',
   },
   signals: [
-    { label: 'WEATHER', value: '81 MM/H', status: 'TRIGGERED' },
-    { label: 'AQI', value: '302', status: 'ESCALATING' },
-    { label: 'CIVIC', value: 'CLEAR', status: 'STANDBY' },
-    { label: 'PAYOUT', value: 'READY', status: 'LIVE' },
+    { label: 'Weather', value: '81 mm/h', status: 'Active' },
+    { label: 'Air quality', value: '302 AQI', status: 'Elevated' },
+    { label: 'Civic access', value: 'No restrictions', status: 'Clear' },
   ],
 };
-
-function formatCurrency(value) {
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    maximumFractionDigits: 0,
-  }).format(Number(value || 0));
-}
 
 function formatTime(date) {
   return new Intl.DateTimeFormat('en-IN', {
@@ -70,37 +68,33 @@ function formatTime(date) {
 }
 
 function formatZone(zone = '') {
-  if (!zone) {
-    return 'KORAMANGALA BLR';
-  }
-
-  return zone.replace(/_/g, ' ').replace(/\s+/g, ' ').trim().toUpperCase();
+  return zone ? formatLabel(zone) : FALLBACK_DASHBOARD.zone;
 }
 
 function formatPlatform(platform = '') {
-  return platform ? platform.toUpperCase() : 'BLINKIT';
+  return platform ? formatLabel(platform) : FALLBACK_DASHBOARD.platform;
 }
 
 function humanizeTrigger(triggerType = '') {
   const trigger = String(triggerType).toLowerCase();
 
-  if (trigger.includes('rain')) {
-    return 'SEVERE RAIN DETECTED';
+  if (trigger.includes('rain') || trigger.includes('flood')) {
+    return 'Heavy rain watch';
   }
 
   if (trigger.includes('aqi')) {
-    return 'HAZARDOUS AQI DETECTED';
+    return 'Air quality alert';
   }
 
   if (trigger.includes('heat')) {
-    return 'EXTREME HEAT DETECTED';
+    return 'Heat alert';
   }
 
   if (trigger.includes('civic') || trigger.includes('curfew') || trigger.includes('bandh')) {
-    return 'CIVIC DISRUPTION DETECTED';
+    return 'Local disruption alert';
   }
 
-  return triggerType ? String(triggerType).replace(/_/g, ' ').toUpperCase() : 'DISRUPTION DETECTED';
+  return 'Zone alert';
 }
 
 function buildSignals(activeTriggers, analytics) {
@@ -114,115 +108,77 @@ function buildSignals(activeTriggers, analytics) {
       trigger.trigger_type?.includes('bandh') ||
       trigger.trigger_type?.includes('curfew'),
   );
-  const payoutEstimate = analytics?.predicted_risk_payout_estimate || FALLBACK_DASHBOARD.hourlyCover;
 
   return [
     {
-      label: 'WEATHER',
-      value: weatherTrigger?.raw_value ? `${Math.round(weatherTrigger.raw_value)} MM/H` : 'WATCHING',
-      status: weatherTrigger ? 'TRIGGERED' : 'STANDBY',
+      label: 'Weather',
+      value: weatherTrigger?.raw_value ? `${Math.round(weatherTrigger.raw_value)} mm/h` : 'Normal',
+      status: weatherTrigger ? 'Active' : 'Clear',
     },
     {
-      label: 'AQI',
-      value: aqiTrigger?.raw_value ? `${Math.round(aqiTrigger.raw_value)} AQI` : 'NOMINAL',
-      status: aqiTrigger ? 'ESCALATING' : 'STANDBY',
+      label: 'Air quality',
+      value: aqiTrigger?.raw_value ? `${Math.round(aqiTrigger.raw_value)} AQI` : 'Within range',
+      status: aqiTrigger ? 'Elevated' : 'Clear',
     },
     {
-      label: 'CIVIC',
-      value: civicTrigger ? 'LOCKED' : 'CLEAR',
-      status: civicTrigger ? 'ACTIVE' : 'STANDBY',
+      label: 'Civic access',
+      value: civicTrigger ? 'Restricted' : 'No restrictions',
+      status: civicTrigger ? 'Watch' : 'Clear',
     },
     {
-      label: 'PAYOUT',
-      value: `${formatCurrency(payoutEstimate)} BUFFER`,
-      status: activeTriggers.length ? 'READY' : 'IDLE',
+      label: 'Support buffer',
+      value: formatCurrency(
+        analytics?.predicted_risk_payout_estimate || FALLBACK_DASHBOARD.hourlyCover,
+      ),
+      status: activeTriggers.length ? 'Ready' : 'On standby',
     },
   ];
 }
 
-function buildTicker(alert, signals) {
-  const base = [
-    alert.message,
-    alert.details,
-    `${signals[0].label} ${signals[0].status}`,
-    `${signals[1].label} ${signals[1].status}`,
-    `${signals[2].label} ${signals[2].status}`,
-    `${signals[3].label} ${signals[3].value}`,
-    'AUTO SETTLEMENT LOCKED',
-  ];
-
-  return `${base.join(' // ')} // `;
-}
-
-function buildDashboardSnapshot({
-  featuredWorker,
-  workerAnalytics,
-  overview,
-  activeTriggers,
-  claims,
-  isLive,
-}) {
-  const primaryTrigger = activeTriggers[0];
-  const workerName = featuredWorker?.name || FALLBACK_DASHBOARD.workerName;
-  const zone = formatZone(primaryTrigger?.zone_id || featuredWorker?.zone_id || FALLBACK_DASHBOARD.zone);
-  const platform = formatPlatform(featuredWorker?.platform_type || FALLBACK_DASHBOARD.platform);
-  const protectedEarnings =
-    workerAnalytics?.earnings_protected ||
-    overview?.total_payouts_amount ||
-    FALLBACK_DASHBOARD.protectedEarnings;
-  const expectedShiftEarning =
-    workerAnalytics?.expected_shift_earning || FALLBACK_DASHBOARD.expectedShiftEarning;
-  const hourlyCover =
-    workerAnalytics?.predicted_risk_payout_estimate || FALLBACK_DASHBOARD.hourlyCover;
-  const signals = buildSignals(activeTriggers, workerAnalytics);
-
-  const alert = primaryTrigger
-    ? {
-        active: true,
-        severity: (primaryTrigger.severity || 'high').toUpperCase(),
-        zone,
-        message: `${humanizeTrigger(primaryTrigger.trigger_type)} - ${zone}`,
-        details: `${signals[0].label} ${signals[0].value} // ${signals[1].label} ${signals[1].value} // ${signals[2].label} ${signals[2].status}`,
-      }
-    : FALLBACK_DASHBOARD.alert;
+function buildAlert(primaryTrigger, zone, signals) {
+  if (!primaryTrigger) {
+    return FALLBACK_DASHBOARD.alert;
+  }
 
   return {
-    isLive,
-    workerName,
-    zone,
-    platform,
-    protectedEarnings,
-    expectedShiftEarning,
-    hourlyCover,
-    activeClaims: Array.isArray(claims) ? claims.length : FALLBACK_DASHBOARD.activeClaims,
-    activePolicies: overview?.active_policies_count || FALLBACK_DASHBOARD.activePolicies,
-    alert,
-    signals,
-    ticker: buildTicker(alert, signals),
+    active: true,
+    title: `${humanizeTrigger(primaryTrigger.trigger_type)} in ${zone}`,
+    copy: `${signals[0].label}: ${signals[0].value}. ${signals[1].label}: ${signals[1].value}. ${signals[2].value}.`,
   };
 }
 
-function SectionHeader({ eyebrow, title, copy, meta }) {
-  return (
-    <div className="clean-section-head">
-      <div className="clean-section-text">
-        <span className="clean-eyebrow">{eyebrow}</span>
-        <h2 className="clean-section-title">{title}</h2>
-        {copy ? <p className="clean-section-copy">{copy}</p> : null}
-      </div>
-      {meta ? <div className="clean-section-meta">{meta}</div> : null}
-    </div>
-  );
+function buildDashboardSnapshot({ featuredWorker, workerAnalytics, activeTriggers, overview, isLive }) {
+  const primaryTrigger = activeTriggers[0];
+  const zone = formatZone(primaryTrigger?.zone_id || featuredWorker?.zone_id || FALLBACK_DASHBOARD.zone);
+  const signals = buildSignals(activeTriggers, workerAnalytics);
+
+  return {
+    isLive,
+    workerName: featuredWorker?.name || FALLBACK_DASHBOARD.workerName,
+    zone,
+    platform: formatPlatform(featuredWorker?.platform_type || FALLBACK_DASHBOARD.platform),
+    protectedEarnings:
+      workerAnalytics?.earnings_protected ||
+      overview?.total_payouts_amount ||
+      FALLBACK_DASHBOARD.protectedEarnings,
+    expectedShiftEarning:
+      workerAnalytics?.expected_shift_earning || FALLBACK_DASHBOARD.expectedShiftEarning,
+    hourlyCover:
+      workerAnalytics?.predicted_risk_payout_estimate || FALLBACK_DASHBOARD.hourlyCover,
+    alert: buildAlert(primaryTrigger, zone, signals),
+    signals,
+  };
 }
 
-function StepCard({ step, title, copy }) {
+function SectionIntro({ eyebrow, title, copy, meta }) {
   return (
-    <div className="clean-step-card">
-      <span className="clean-step-index">{step}</span>
+    <div className="ek-section-intro">
       <div>
-        <h3 className="clean-step-title">{title}</h3>
-        <p className="clean-step-copy">{copy}</p>
+        <span className="ek-kicker">{eyebrow}</span>
+        <h2>{title}</h2>
+        <p>{copy}</p>
       </div>
+      {meta ? <div className="ek-section-meta">{meta}</div> : null}
     </div>
   );
 }
@@ -232,7 +188,7 @@ export default function EasyKavachDashboard() {
   const [clock, setClock] = useState(() => formatTime(new Date()));
 
   useEffect(() => {
-    document.title = 'EasyKavach // Home';
+    document.title = 'EasyKavach | Home';
   }, []);
 
   useEffect(() => {
@@ -247,11 +203,10 @@ export default function EasyKavachDashboard() {
     let isMounted = true;
 
     const loadDashboard = async () => {
-      const [workersRes, insurerRes, triggersRes, claimsRes] = await Promise.allSettled([
+      const [workersRes, insurerRes, triggersRes] = await Promise.allSettled([
         apiClient.get('/workers'),
         analyticsService.getInsurerOverview(),
         apiClient.get('/triggers/active'),
-        claimService.list('paid'),
       ]);
 
       const featuredWorker =
@@ -275,22 +230,16 @@ export default function EasyKavachDashboard() {
         triggersRes.status === 'fulfilled' && Array.isArray(triggersRes.value.data)
           ? triggersRes.value.data
           : [];
-      const claims =
-        claimsRes.status === 'fulfilled' && Array.isArray(claimsRes.value.data)
-          ? claimsRes.value.data
-          : [];
       const isLive =
         workersRes.status === 'fulfilled' ||
         insurerRes.status === 'fulfilled' ||
-        triggersRes.status === 'fulfilled' ||
-        claimsRes.status === 'fulfilled';
+        triggersRes.status === 'fulfilled';
 
       const nextDashboard = buildDashboardSnapshot({
         featuredWorker,
         workerAnalytics,
-        overview,
         activeTriggers,
-        claims,
+        overview,
         isLive,
       });
 
@@ -312,170 +261,161 @@ export default function EasyKavachDashboard() {
     };
   }, []);
 
-  const tickerText = dashboard.ticker || buildTicker(dashboard.alert, dashboard.signals);
-
   return (
-    <div className="clean-dashboard">
-      <div className="clean-shell">
-        <main className="clean-main">
-          <section className="clean-hero" id="top">
-            <div className="clean-hero-copy">
-              <span className="clean-kicker">
-                AI-powered parametric income insurance for Blinkit delivery partners
+    <main className="ek-page-shell ek-section-stack">
+      <section className="ek-hero">
+        <div className="ek-panel ek-panel--feature">
+          <span className="ek-kicker">Income protection for delivery partners</span>
+          <h1 className="ek-hero-title">Cover lost income when work has to stop.</h1>
+          <p className="ek-hero-text">
+            EasyKavach helps delivery partners recover income when weather, air quality, or local
+            disruption makes the shift impossible.
+          </p>
+          <p className="ek-page-copy">
+            Get clear cover details, live status, and fast support when a shift is interrupted.
+          </p>
+
+          <div className="ek-button-row">
+            <Link to="/register" className="ek-button ek-button--primary">
+              Create profile
+              <ArrowRight size={16} />
+            </Link>
+            <Link to="/login" className="ek-button ek-button--secondary">
+              Sign in
+              <ArrowUpRight size={16} />
+            </Link>
+          </div>
+
+          <div className="ek-inline-list">
+            <span>Income loss only</span>
+            <span>Weekly cover</span>
+            <span>Fast payout</span>
+          </div>
+        </div>
+
+        <aside className="ek-panel ek-panel--tint">
+          <div className="ek-card-head">
+            <span className="ek-status-pill">
+              <ShieldCheck size={14} />
+              {dashboard.isLive ? 'Live data' : 'Sample preview'}
+            </span>
+            <span className="ek-inline-note">{clock}</span>
+          </div>
+
+          <div className="ek-alert-block">
+            <span className="ek-label">Current watch</span>
+            <h2>{dashboard.alert.title}</h2>
+            <p>{dashboard.alert.copy}</p>
+          </div>
+
+          <div className="ek-metrics-grid ek-metrics-grid--compact">
+            <div className="ek-metric-card">
+              <span className="ek-metric-label">Current zone</span>
+              <strong className="ek-metric-value">{dashboard.zone}</strong>
+              <p className="ek-metric-note">Latest registered zone in view.</p>
+            </div>
+            <div className="ek-metric-card">
+              <span className="ek-metric-label">Typical shift income</span>
+              <strong className="ek-metric-value">
+                {formatCurrency(dashboard.expectedShiftEarning)}
+              </strong>
+              <p className="ek-metric-note">Estimated for one shift.</p>
+            </div>
+            <div className="ek-metric-card">
+              <span className="ek-metric-label">Support per hour</span>
+              <strong className="ek-metric-value">{formatCurrency(dashboard.hourlyCover)}</strong>
+              <p className="ek-metric-note">Available when a covered event interrupts work.</p>
+            </div>
+            <div className="ek-metric-card">
+              <span className="ek-metric-label">Protected so far</span>
+              <strong className="ek-metric-value">
+                {formatCurrency(dashboard.protectedEarnings)}
+              </strong>
+              <p className="ek-metric-note">Support already paid through EasyKavach.</p>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <section className="ek-content-grid">
+        <article className="ek-panel">
+          <SectionIntro
+            eyebrow="How it works"
+            title="Three simple steps from signup to payout"
+            copy="Sign up once, stay covered, and get paid automatically when a covered event interrupts work."
+          />
+
+          <div className="ek-steps-grid">
+            {FEATURE_STEPS.map((item) => (
+              <div className="ek-step-card" key={item.step}>
+                <span className="ek-step-number">{item.step}</span>
+                <h3>{item.title}</h3>
+                <p>{item.copy}</p>
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="ek-panel">
+          <SectionIntro
+            eyebrow="Coverage watch"
+            title="Key signals in one clear panel"
+            copy="See the current weather, air quality, access, and support status for the active zone."
+            meta={<span className="ek-section-chip">{dashboard.platform}</span>}
+          />
+
+          <div className="ek-signal-list">
+            {dashboard.signals.map((signal) => (
+              <div className="ek-signal-row" key={signal.label}>
+                <div>
+                  <span className="ek-label">{signal.label}</span>
+                  <strong className="ek-list-title">{signal.value}</strong>
+                </div>
+                <span className="ek-list-badge">{signal.status}</span>
+              </div>
+            ))}
+          </div>
+        </article>
+      </section>
+
+      <section className="ek-content-grid">
+        <article className="ek-panel">
+          <SectionIntro
+            eyebrow="What is covered"
+            title="Focused only on the situations that stop work"
+            copy="EasyKavach is designed around practical interruptions that delivery partners actually face."
+          />
+
+          <div className="ek-features-grid">
+            {COVERAGE_POINTS.map((point) => (
+              <div className="ek-feature-card" key={point.title}>
+                <h3>{point.title}</h3>
+                <p>{point.copy}</p>
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="ek-panel ek-panel--soft">
+          <SectionIntro
+            eyebrow="Partners"
+            title="Services behind the cover"
+            copy="Weather data, zone monitoring, and payout services help keep the cover running."
+          />
+
+          <div className="ek-partner-list" aria-label="Data and payout partners">
+            {PARTNERS.map((partner) => (
+              <span className="ek-partner-pill" key={partner}>
+                {partner}
               </span>
-              <h1 className="clean-hero-title">
-                <span>Easy</span>
-                <span>Kavach</span>
-              </h1>
-              <p className="clean-hero-text">
-                EasyKavach protects delivery income when weather, air quality, road access, or
-                civic disruption makes the shift impossible. The experience stays focused on the
-                worker, the live signal, and the payout.
-              </p>
-              <p className="clean-hero-note">
-                Coverage stays narrow by design: income loss only, auto-detected, auto-processed,
-                and auto-settled.
-              </p>
+            ))}
+          </div>
 
-              <div className="clean-action-row">
-                <Link to="/register" className="clean-primary-button">
-                  REGISTER
-                  <ArrowRight size={16} strokeWidth={2.5} />
-                </Link>
-                <Link to="/login" className="clean-secondary-button">
-                  LOGIN
-                  <ArrowUpRight size={16} strokeWidth={2.5} />
-                </Link>
-              </div>
-
-              <div className="clean-mini-row">
-                <span>Income loss only</span>
-                <span>Weekly dynamic premium</span>
-                <span>Instant UPI settlement</span>
-              </div>
-            </div>
-
-            <aside className="clean-hero-panel">
-              <div className="clean-panel-head">
-                <span className="clean-status-tag">
-                  <ShieldCheck size={14} />
-                  {dashboard.isLive ? 'LIVE API' : 'DESIGN SNAPSHOT'}
-                </span>
-                <span className="clean-clock">{clock}</span>
-              </div>
-
-              <div className="clean-status-grid">
-                <div className="clean-status-row">
-                  <span>Worker</span>
-                  <strong>{dashboard.workerName}</strong>
-                </div>
-                <div className="clean-status-row">
-                  <span>Zone</span>
-                  <strong>{dashboard.zone}</strong>
-                </div>
-                <div className="clean-status-row">
-                  <span>Platform</span>
-                  <strong>{dashboard.platform}</strong>
-                </div>
-                <div className="clean-status-row">
-                  <span>Protected</span>
-                  <strong>{formatCurrency(dashboard.protectedEarnings)}</strong>
-                </div>
-                <div className="clean-status-row">
-                  <span>Shift Forecast</span>
-                  <strong>{formatCurrency(dashboard.expectedShiftEarning)}</strong>
-                </div>
-                <div className="clean-status-row">
-                  <span>Hourly Shield</span>
-                  <strong>{formatCurrency(dashboard.hourlyCover)}</strong>
-                </div>
-                <div className="clean-status-row">
-                  <span>Policies</span>
-                  <strong>{dashboard.activePolicies}</strong>
-                </div>
-                <div className="clean-status-row">
-                  <span>Claims</span>
-                  <strong>{dashboard.activeClaims}</strong>
-                </div>
-              </div>
-
-              <div className="clean-alert-card">
-                <span className="clean-alert-kicker">ACTIVE STATUS</span>
-                <p className="clean-alert-title">{dashboard.alert.message}</p>
-                <p className="clean-alert-copy">{dashboard.alert.details}</p>
-              </div>
-            </aside>
-          </section>
-
-          <section className="clean-two-up">
-            <article className="clean-card">
-              <SectionHeader
-                eyebrow="HOW IT WORKS"
-                title="Three core actions, one payout path"
-                copy="A worker registers, the zone monitor watches live signals, and the payout rail handles the settlement."
-              />
-
-              <div className="clean-step-grid">
-                {FEATURE_STEPS.map((step) => (
-                  <StepCard key={step.step} step={step.step} title={step.title} copy={step.copy} />
-                ))}
-              </div>
-            </article>
-
-            <article
-              className={`clean-card clean-monitor-card ${dashboard.alert.active ? 'is-live' : ''}`}
-              id="monitor"
-            >
-              <SectionHeader
-                eyebrow="LIVE MONITOR"
-                title="Geo-fenced triggers stay on watch"
-                copy="Weather, AQI, flood risk, and civic events are shown in one compact panel for quick scanning."
-                meta={
-                  <span className="clean-inline-tag">
-                    {dashboard.alert.severity} / {dashboard.alert.zone}
-                  </span>
-                }
-              />
-
-              <div className="clean-signal-list">
-                {dashboard.signals.map((signal) => (
-                  <div className="clean-signal-row" key={signal.label}>
-                    <span className="clean-signal-name">{signal.label}</span>
-                    <span className="clean-signal-value">{signal.value}</span>
-                    <span className="clean-signal-state">{signal.status}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="clean-ticker" aria-label="Active alert ticker">
-                <div className="clean-ticker-track">
-                  {Array.from({ length: 4 }).map((_, index) => (
-                    <span key={`${tickerText}-${index}`}>{tickerText}</span>
-                  ))}
-                </div>
-              </div>
-            </article>
-          </section>
-
-          <footer className="clean-footer">
-            <div>
-              <span className="clean-eyebrow">VERIFICATION &amp; PARTNERS</span>
-              <p>
-                OpenWeather, Open-Meteo, Blinkit, and Razorpay appear as a concise partner
-                strip.
-              </p>
-            </div>
-
-            <div className="clean-partner-strip" aria-label="Data and payout partners">
-              {PARTNERS.map((partner) => (
-                <span className="clean-partner-mark" key={partner}>
-                  {partner}
-                </span>
-              ))}
-            </div>
-          </footer>
-        </main>
-      </div>
-    </div>
+          <p className="ek-support-note">
+            These services support monitoring and payout processing.
+          </p>
+        </article>
+      </section>
+    </main>
   );
 }

@@ -31,10 +31,13 @@ class Worker(Base):
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     name = Column(String, nullable=False)
     phone = Column(String, unique=True, nullable=False)
-    upi_id = Column(String, nullable=False)
+    email = Column(String, nullable=True)
+    pancard = Column(String, nullable=True)
+    aadhaar = Column(String, nullable=True)
+    upi_id = Column(String, nullable=False, default="")
     zone_id = Column(String, ForeignKey("zones.id"))
     area_type = Column(Enum(AreaType), default=AreaType.COMMERCIAL)
-    platform_type = Column(String, default="Blinkit") # e.g., "Blinkit", "Swiggy", "Zepto"
+    platform_type = Column(String, default="Blinkit") # e.g., "Blinkit", "Zepto", "Uber Eats"
     warehouse_distance_km = Column(Float, default=1.0)
     is_online = Column(Boolean, default=False)
     registered_at = Column(DateTime, default=datetime.utcnow)
