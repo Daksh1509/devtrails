@@ -42,7 +42,7 @@ const Registration = ({ setWorkerId }) => {
       
       setStep(4); // Success step
     } catch (err) {
-      alert("Registration failed. Please check pulse.");
+      alert("Registration failed. Please check your connection or try again.");
     } finally {
       setIsLoading(false);
     }
@@ -60,7 +60,12 @@ const Registration = ({ setWorkerId }) => {
   };
 
   return (
-    <div className="max-w-[640px] mx-auto relative py-16">
+    <motion.div 
+      initial={{ opacity: 0, y: 20, filter: "blur(5px)" }}
+      animate={{ opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.5, ease: "easeOut" } }}
+      exit={{ opacity: 0, y: -20, filter: "blur(5px)", transition: { duration: 0.3 } }}
+      className="max-w-[640px] mx-auto relative py-16 px-4"
+    >
       <div className="text-center mb-16 space-y-4">
         <motion.div 
           initial={{ y: -10, opacity: 0 }}
@@ -68,30 +73,35 @@ const Registration = ({ setWorkerId }) => {
           className="flex items-center justify-center gap-3 text-emerald-glow mb-2"
         >
           <Cpu size={18} className="animate-pulse" />
-          <span className="text-[10px] font-black uppercase tracking-[0.3em]">Protocol Initiation // X-SHIELD</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.3em]">Worker Registration // EasyKavach</span>
         </motion.div>
         <h1 className="text-5xl font-black text-white tracking-tighter leading-none uppercase glitch-text">
-          Entity <span className="text-emerald-glow">Onboarding</span>
+          Worker <span className="text-emerald-glow">Onboarding</span>
         </h1>
-        <p className="text-white/30 font-bold text-[11px] uppercase tracking-widest leading-relaxed">Secure your parametric footprint within the mesh network.</p>
+        <p className="text-white/30 font-bold text-[11px] uppercase tracking-widest leading-relaxed">Secure your income protection with our parametric insurance.</p>
       </div>
 
       {/* Progress Stepper */}
-      <div className="flex items-center justify-between px-20 mb-16 relative">
+      <motion.div 
+        initial={{ opacity: 0, scaleX: 0 }}
+        animate={{ opacity: 1, scaleX: 1 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="flex items-center justify-between px-20 mb-16 relative"
+      >
         <div className="absolute top-1/2 left-0 w-full h-[1px] bg-white/5 -z-10 -translate-y-1/2"></div>
         {[1, 2, 3].map(s => (
           <div key={s} className="bg-carbon-dark px-4 transition-colors duration-500">{renderStepIcon(s)}</div>
         ))}
-      </div>
+      </motion.div>
 
       <AnimatePresence mode="wait">
         {step === 1 && (
-          <motion.div 
+            <motion.div 
             key="step1"
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.02 }}
-            className="tactical-card p-10 border-white/5 bg-carbon/60 backdrop-blur-sm"
+            className="relative overflow-hidden p-10 border border-white/10 bg-carbon-dark/70 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] rounded-3xl transition-all duration-500 hover:border-emerald-glow/20"
           >
             <div className="flex items-center justify-between mb-10 border-b border-white/5 pb-6">
               <h2 className="text-sm font-black text-white tracking-[0.2em] flex items-center gap-4 uppercase">
@@ -102,19 +112,19 @@ const Registration = ({ setWorkerId }) => {
             
             <div className="space-y-8">
               <div className="space-y-3">
-                <label className="block text-[10px] font-black text-white/30 mb-2 uppercase tracking-[0.2em] ml-1">Entity Full Name</label>
+                <label className="block text-[10px] font-black text-white/30 mb-2 uppercase tracking-[0.2em] ml-1">Full Name</label>
                 <input 
                   type="text" 
                   value={formData.name}
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  placeholder="E.G. SUNDER SETH"
+                  placeholder="e.g. Sunder Seth"
                   className="tactical-input w-full p-4 text-[13px] tracking-widest placeholder:text-white/10" 
                 />
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-3">
-                  <label className="block text-[10px] font-black text-white/30 mb-2 uppercase tracking-[0.2em] ml-1">Comms (Phone)</label>
+                  <label className="block text-[10px] font-black text-white/30 mb-2 uppercase tracking-[0.2em] ml-1">Phone Number</label>
                   <input 
                     type="tel" 
                     value={formData.phone}
@@ -124,12 +134,12 @@ const Registration = ({ setWorkerId }) => {
                   />
                 </div>
                 <div className="space-y-3">
-                  <label className="block text-[10px] font-black text-white/30 mb-2 uppercase tracking-[0.2em] ml-1">Wallet Address (UPI)</label>
+                  <label className="block text-[10px] font-black text-white/30 mb-2 uppercase tracking-[0.2em] ml-1">UPI ID</label>
                   <input 
                     type="text" 
                     value={formData.upi_id}
                     onChange={(e) => setFormData({...formData, upi_id: e.target.value})}
-                    placeholder="IDENTITY@UPI"
+                    placeholder="yourname@upi"
                     className="tactical-input w-full p-4 text-[13px] tracking-widest placeholder:text-white/10" 
                   />
                 </div>
@@ -141,7 +151,7 @@ const Registration = ({ setWorkerId }) => {
               className="tactical-btn-emerald w-full mt-12 py-4 justify-center"
               disabled={!formData.name || !formData.phone}
             >
-              Scan Operation Zones <ChevronRight size={18} />
+              Select Operation Zones <ChevronRight size={18} />
             </button>
           </motion.div>
         )}
@@ -152,11 +162,11 @@ const Registration = ({ setWorkerId }) => {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="tactical-card p-10 border-emerald-tactical/20 bg-carbon/60 backdrop-blur-sm shadow-tactical-glow"
+            className="relative overflow-hidden p-10 border border-emerald-tactical/30 bg-carbon-dark/70 backdrop-blur-2xl shadow-[0_8px_32px_rgba(16,185,129,0.15)] rounded-3xl transition-all duration-500"
           >
             <div className="flex items-center justify-between mb-10 border-b border-white/5 pb-6">
               <h2 className="text-sm font-black text-white tracking-[0.2em] flex items-center gap-4 uppercase">
-                <MapPin className="text-emerald-glow" size={20} /> Field Sector Allocation
+                <MapPin className="text-emerald-glow" size={20} /> Zone Allocation
               </h2>
               <span className="text-[10px] font-black text-emerald-glow/40 uppercase tracking-widest px-3 py-1 bg-white/5 rounded">Stage 02</span>
             </div>
@@ -167,10 +177,10 @@ const Registration = ({ setWorkerId }) => {
                   key={zone.id}
                   whileHover={{ x: 5 }}
                   onClick={() => setFormData({...formData, zone_id: zone.id})}
-                  className={`p-6 rounded border transition-all duration-300 flex items-center justify-between cursor-pointer ${
+                  className={`p-6 rounded-2xl border transition-all duration-300 flex items-center justify-between cursor-pointer ${
                     formData.zone_id === zone.id 
-                    ? 'border-emerald-glow bg-emerald-glow/5 shadow-tactical' 
-                    : 'border-white/5 bg-carbon-dark/50 hover:bg-white/5'
+                    ? 'border-emerald-glow bg-emerald-glow/5 shadow-[0_0_15px_rgba(16,185,129,0.2)]' 
+                    : 'border-white/5 bg-carbon-dark/50 hover:bg-white/5 hover:border-white/20'
                   }`}
                 >
                   <div className="flex items-center gap-5">
@@ -179,7 +189,7 @@ const Registration = ({ setWorkerId }) => {
                     </div>
                     <div>
                       <p className={`font-black text-sm tracking-[0.2em] transition-colors uppercase ${formData.zone_id === zone.id ? 'text-white' : 'text-white/60'}`}>{zone.name}</p>
-                      <p className="text-[9px] text-white/20 font-black uppercase tracking-[0.1em] mt-1.5">{zone.city} Sector • Threat Ratio: {zone.base_risk_score.toFixed(1)}</p>
+                      <p className="text-[9px] text-white/20 font-black uppercase tracking-[0.1em] mt-1.5">{zone.city} Sector • Risk Score: {zone.base_risk_score?.toFixed(1) || '0.0'}</p>
                     </div>
                   </div>
                   {formData.zone_id === zone.id && (
@@ -200,14 +210,14 @@ const Registration = ({ setWorkerId }) => {
                 onClick={() => setStep(1)}
                 className="tactical-btn hover:bg-white/5 text-white/40 border border-white/5 flex-1 justify-center"
               >
-                Recall
+                Back
               </button>
               <button 
                 onClick={() => setStep(3)}
                 className="tactical-btn-emerald flex-[2] justify-center"
                 disabled={!formData.zone_id}
               >
-                Initialize Coverage <ChevronRight size={18} />
+                Continue <ChevronRight size={18} />
               </button>
             </div>
           </motion.div>
@@ -219,11 +229,11 @@ const Registration = ({ setWorkerId }) => {
             initial={{ opacity: 0, scale: 1.05 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="tactical-card p-10 border-alert-orange/20 bg-carbon/60 backdrop-blur-sm"
+            className="relative overflow-hidden p-10 border border-alert-orange/30 bg-carbon-dark/70 backdrop-blur-2xl shadow-[0_8px_32px_rgba(234,88,12,0.15)] rounded-3xl transition-all duration-500"
           >
             <div className="flex items-center justify-between mb-10 border-b border-white/5 pb-6">
               <h2 className="text-sm font-black text-white tracking-[0.2em] flex items-center gap-4 uppercase">
-                <Briefcase className="text-alert-orange" size={20} /> Shift Protocol
+                <Briefcase className="text-alert-orange" size={20} /> Shift Registration
               </h2>
               <span className="text-[10px] font-black text-alert-orange/40 uppercase tracking-widest px-3 py-1 bg-white/5 rounded">Stage 03</span>
             </div>
@@ -233,13 +243,13 @@ const Registration = ({ setWorkerId }) => {
                 <div className="absolute -right-6 -bottom-6 text-alert-orange/5 group-hover:scale-110 transition-transform duration-500">
                    <Zap size={100} />
                 </div>
-                <p className="text-[10px] uppercase font-black text-alert-orange tracking-[0.2em] mb-3">Unit Risk Base-Price</p>
+                <p className="text-[10px] uppercase font-black text-alert-orange tracking-[0.2em] mb-3">Base Premium Rate</p>
                 <div className="flex items-baseline gap-2">
                    <span className="text-xl font-black text-alert-orange">₹</span>
                    <p className="text-5xl font-black text-white tracking-tighter leading-none">40.00</p>
-                   <span className="text-[10px] font-black text-white/20 uppercase tracking-widest ml-2">/ Cycle</span>
+                   <span className="text-[10px] font-black text-white/20 uppercase tracking-widest ml-2">/ Shift</span>
                 </div>
-                <p className="text-[11px] text-white/40 font-bold mt-5 leading-relaxed uppercase tracking-wide">Automatic disbursement up to <span className="text-white font-black">₹400 per incident</span>. Documentation-free settlement protocol active.</p>
+                <p className="text-[11px] text-white/40 font-bold mt-5 leading-relaxed uppercase tracking-wide">Automatic disbursement up to <span className="text-white font-black">₹400 per incident</span>. Documentation-free settlement.</p>
               </div>
               
               <div className="grid grid-cols-2 gap-4">
@@ -252,10 +262,10 @@ const Registration = ({ setWorkerId }) => {
                         : [...formData.shifts, sh];
                       setFormData({...formData, shifts: newShifts});
                     }}
-                    className={`p-5 rounded border font-black uppercase tracking-[0.2em] transition-all duration-300 text-[10px] flex items-center justify-center gap-3 ${
+                    className={`p-5 rounded-2xl border font-black uppercase tracking-[0.2em] transition-all duration-300 text-[10px] flex items-center justify-center gap-3 hover:-translate-y-0.5 ${
                       formData.shifts.includes(sh)
-                      ? 'border-alert-orange bg-alert-orange/10 text-alert-orange shadow-alert-glow'
-                      : 'border-white/5 bg-carbon-dark/40 text-white/20 hover:border-white/10'
+                      ? 'border-alert-orange bg-alert-orange/10 text-alert-orange shadow-[0_0_15px_rgba(234,88,12,0.2)]'
+                      : 'border-white/5 bg-carbon-dark/40 text-white/20 hover:border-white/20'
                     }`}
                   >
                     {formData.shifts.includes(sh) && <div className="w-1.5 h-1.5 rounded-full bg-alert-orange shadow-[0_0_8px_#EA580C]" />}
@@ -270,7 +280,7 @@ const Registration = ({ setWorkerId }) => {
                 onClick={() => setStep(2)}
                 className="tactical-btn hover:bg-white/5 text-white/40 border border-white/5 flex-1 justify-center"
               >
-                Abort
+                Back
               </button>
               <button 
                 onClick={handleRegister}
@@ -288,26 +298,26 @@ const Registration = ({ setWorkerId }) => {
             key="step4"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="tactical-card text-center py-20 px-10 border-emerald-tactical/40 bg-carbon/80 shadow-tactical-glow"
+            className="relative overflow-hidden text-center py-20 px-10 border border-emerald-tactical/40 bg-carbon-dark/80 backdrop-blur-2xl shadow-[0_8px_32px_rgba(16,185,129,0.2)] rounded-[2.5rem] transition-all duration-500"
           >
             <div className="w-24 h-24 bg-emerald-glow text-carbon-dark rounded-full flex items-center justify-center mx-auto mb-10 shadow-tactical-glow relative">
               <div className="absolute inset-0 rounded-full border-4 border-emerald-glow animate-ping -z-10" />
               <CheckCircle2 size={48} className="stroke-[3]" />
             </div>
-            <h2 className="text-4xl font-black mb-4 text-white tracking-tighter leading-none uppercase">Deployment <br /> Confirmed</h2>
+            <h2 className="text-4xl font-black mb-4 text-white tracking-tighter leading-none uppercase">Registration <br /> Confirmed</h2>
             <p className="text-white/40 mb-12 max-w-sm mx-auto font-bold text-[11px] uppercase tracking-widest leading-relaxed">
-              Geospatial policy for <span className="text-emerald-glow font-black">{formData.name}</span> in sector <span className="text-emerald-glow font-black">{formData.zone_id.replace('_', ' ')}</span> has been uploaded to the ledger.
+              Your policy for <span className="text-emerald-glow font-black">{formData.name}</span> in sector <span className="text-emerald-glow font-black">{formData.zone_id.replace('_', ' ')}</span> has been successfully created.
             </p>
             <button 
               onClick={() => navigate('/')}
               className="tactical-btn-emerald px-12 py-4 mx-auto text-sm"
             >
-              Initialize Dashboard <ArrowRight size={20} />
+              Go to Dashboard <ArrowRight size={20} />
             </button>
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 };
 

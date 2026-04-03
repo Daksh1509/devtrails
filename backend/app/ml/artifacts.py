@@ -18,6 +18,25 @@ try:  # pragma: no cover - the warning class is version-specific
 except Exception:  # pragma: no cover - older/newer sklearn builds may differ
     InconsistentVersionWarning = None
 
+import sys
+import types
+from sklearn.pipeline import Pipeline
+import numpy as np
+import sklearn.compose._column_transformer
+
+# Hack for older sklearn model pipelines unpickling in newer sklearn
+class _RemainderColsList:
+    pass
+
+if not hasattr(sklearn.compose._column_transformer, '_RemainderColsList'):
+    sklearn.compose._column_transformer._RemainderColsList = _RemainderColsList
+
+# Hack for models pickled referencing a module "Pipeline" looking for "dtype"
+pm = types.ModuleType("Pipeline")
+pm.Pipeline = Pipeline
+pm.dtype = np.dtype
+sys.modules["Pipeline"] = pm
+
 PACKAGE_ML_ROOT = Path(__file__).resolve().parent
 BACKEND_ROOT = Path(__file__).resolve().parents[2]
 ARTIFACT_ROOT_CANDIDATES = (
@@ -37,10 +56,14 @@ def _resolve_artifact_path(*relative_candidates: str) -> Path:
 
 
 EARNINGS_MODEL_PATH = _resolve_artifact_path(
+    "best_earnings_model.pkl",
+    "earnings_predictor/model/best_earnings_model.pkl",
     "easykavach_earnings_model.pt",
     "earnings_predictor/model/easykavach_earnings_model.pt",
 )
 FRAUD_MODEL_PATH = _resolve_artifact_path(
+    "best_fraud_model.pkl",
+    "fraud_classifier/model/best_fraud_model.pkl",
     "easykavach_fraud_model.pt",
     "fraud_classifier/model/easykavach_fraud_model.pt",
 )
@@ -120,11 +143,17 @@ def _load_serialized_artifact(path: Path) -> Any | None:
 
     for loader in loaders:
         try:
+            val = None
             if loader is joblib.load and InconsistentVersionWarning is not None:
                 with warnings.catch_warnings():
                     warnings.filterwarnings("ignore", category=InconsistentVersionWarning)
-                    return loader(path)
-            return loader(path)
+                    val = loader(path)
+            else:
+                val = loader(path)
+            
+            if isinstance(val, dict) and 'pipeline' in val:
+                return val['pipeline']
+            return val
         except Exception as exc:  # pragma: no cover - loader fallbacks are runtime-safe
             logger.debug("Failed to load %s with %s: %s", path.name, loader, exc)
 
@@ -319,14 +348,39 @@ def _predict(model: Any | None, feature_frame: pd.DataFrame, probability: bool =
             return label_probability
     except Exception as exc:
         logger.warning("ML inference failed: %s", exc)
+        import traceback; traceback.print_exc()
         return None
 
 
 def predict_expected_shift_earning(feature_map: dict[str, Any]) -> float | None:
-    feature_frame = _build_feature_frame("earnings", feature_map, DEFAULT_EARNINGS_FEATURES)
-    return _predict(load_earnings_model(), feature_frame, probability=False)
+    model = load_earnings_model()
+    # Force use of the model's explicitly expected feature names to bypass any stale metadata
+    feature_names = list(getattr(model, "feature_names_in_", DEFAULT_EARNINGS_FEATURES))
+    
+    encoders = _encoders("earnings")
+    defaults = _defaults("earnings")
+    
+    row = []
+    for f in feature_names:
+        # Pass raw values; sklearn pipelines handle encoding and imputation internally
+        row.append(feature_map.get(f, None))
+        
+    feature_frame = pd.DataFrame([row], columns=feature_names)
+    return _predict(model, feature_frame, probability=False)
 
 
 def predict_fraud_probability(feature_map: dict[str, Any]) -> float | None:
-    feature_frame = _build_feature_frame("fraud", feature_map, DEFAULT_FRAUD_FEATURES)
-    return _predict(load_fraud_model(), feature_frame, probability=True)
+    model = load_fraud_model()
+    # Force use of the model's explicitly expected feature names to bypass any stale metadata
+    feature_names = list(getattr(model, "feature_names_in_", DEFAULT_FRAUD_FEATURES))
+    
+    encoders = _encoders("fraud")
+    defaults = _defaults("fraud")
+    
+    row = []
+    for f in feature_names:
+        # Pass raw values; sklearn pipelines handle encoding and imputation internally
+        row.append(feature_map.get(f, None))
+        
+    feature_frame = pd.DataFrame([row], columns=feature_names)
+    return _predict(model, feature_frame, probability=True)

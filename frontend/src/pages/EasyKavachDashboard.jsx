@@ -3,6 +3,7 @@ import { ArrowRight, ArrowUpRight, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import apiClient, { analyticsService } from '../services/api';
 import { formatCurrency, formatLabel } from '../utils/formatters';
+import TiltCard from '../components/TiltCard';
 
 const FEATURE_STEPS = [
   {
@@ -293,7 +294,7 @@ export default function EasyKavachDashboard() {
           </div>
         </div>
 
-        <aside className="ek-panel ek-panel--tint">
+        <TiltCard className="ek-panel ek-panel--tint" intensity={8} glareColor="rgba(16,185,129,0.12)">
           <div className="ek-card-head">
             <span className="ek-status-pill">
               <ShieldCheck size={14} />
@@ -309,32 +310,32 @@ export default function EasyKavachDashboard() {
           </div>
 
           <div className="ek-metrics-grid ek-metrics-grid--compact">
-            <div className="ek-metric-card">
+            <TiltCard className="ek-metric-card" intensity={15} glareColor="rgba(16,185,129,0.1)">
               <span className="ek-metric-label">Current zone</span>
               <strong className="ek-metric-value">{dashboard.zone}</strong>
               <p className="ek-metric-note">Latest registered zone in view.</p>
-            </div>
-            <div className="ek-metric-card">
+            </TiltCard>
+            <TiltCard className="ek-metric-card" intensity={15} glareColor="rgba(16,185,129,0.1)">
               <span className="ek-metric-label">Typical shift income</span>
               <strong className="ek-metric-value">
                 {formatCurrency(dashboard.expectedShiftEarning)}
               </strong>
               <p className="ek-metric-note">Estimated for one shift.</p>
-            </div>
-            <div className="ek-metric-card">
+            </TiltCard>
+            <TiltCard className="ek-metric-card" intensity={15} glareColor="rgba(16,185,129,0.1)">
               <span className="ek-metric-label">Support per hour</span>
               <strong className="ek-metric-value">{formatCurrency(dashboard.hourlyCover)}</strong>
               <p className="ek-metric-note">Available when a covered event interrupts work.</p>
-            </div>
-            <div className="ek-metric-card">
+            </TiltCard>
+            <TiltCard className="ek-metric-card" intensity={15} glareColor="rgba(234,88,12,0.1)">
               <span className="ek-metric-label">Protected so far</span>
               <strong className="ek-metric-value">
                 {formatCurrency(dashboard.protectedEarnings)}
               </strong>
               <p className="ek-metric-note">Support already paid through EasyKavach.</p>
-            </div>
+            </TiltCard>
           </div>
-        </aside>
+        </TiltCard>
       </section>
 
       <section className="ek-content-grid">
@@ -347,11 +348,11 @@ export default function EasyKavachDashboard() {
 
           <div className="ek-steps-grid">
             {FEATURE_STEPS.map((item) => (
-              <div className="ek-step-card" key={item.step}>
+              <TiltCard className="ek-step-card" key={item.step} intensity={14} glareColor="rgba(16,185,129,0.08)">
                 <span className="ek-step-number">{item.step}</span>
                 <h3>{item.title}</h3>
                 <p>{item.copy}</p>
-              </div>
+              </TiltCard>
             ))}
           </div>
         </article>
@@ -366,13 +367,13 @@ export default function EasyKavachDashboard() {
 
           <div className="ek-signal-list">
             {dashboard.signals.map((signal) => (
-              <div className="ek-signal-row" key={signal.label}>
+              <TiltCard className="ek-signal-row" key={signal.label} intensity={10} glareColor="rgba(255,255,255,0.05)">
                 <div>
                   <span className="ek-label">{signal.label}</span>
                   <strong className="ek-list-title">{signal.value}</strong>
                 </div>
                 <span className="ek-list-badge">{signal.status}</span>
-              </div>
+              </TiltCard>
             ))}
           </div>
         </article>
@@ -388,10 +389,10 @@ export default function EasyKavachDashboard() {
 
           <div className="ek-features-grid">
             {COVERAGE_POINTS.map((point) => (
-              <div className="ek-feature-card" key={point.title}>
+              <TiltCard className="ek-feature-card" key={point.title} intensity={14} glareColor="rgba(234,88,12,0.08)">
                 <h3>{point.title}</h3>
                 <p>{point.copy}</p>
-              </div>
+              </TiltCard>
             ))}
           </div>
         </article>

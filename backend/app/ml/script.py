@@ -113,6 +113,11 @@ def load_dataset(dataset_path: Path) -> pd.DataFrame:
 def _build_feature_map_from_row(row: pd.Series) -> dict[str, Any]:
     feature_map: dict[str, Any] = {}
 
+    # Copy all fields from row first
+    for col, value in row.items():
+        feature_map[col] = _clean_value(value)
+
+    # Apply specific overrides/renames from MODEL_FEATURE_SPECS
     for source_column, model_column, is_categorical in MODEL_FEATURE_SPECS:
         raw_value = _clean_value(row.get(source_column))
         if is_categorical:

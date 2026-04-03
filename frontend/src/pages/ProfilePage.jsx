@@ -16,14 +16,15 @@ import {
   formatLabel,
   formatPercent,
 } from '../utils/formatters';
+import TiltCard from '../components/TiltCard';
 
 function MetricCard({ label, value, note }) {
   return (
-    <div className="ek-metric-card">
+    <TiltCard className="ek-metric-card" intensity={14} glareColor="rgba(16,185,129,0.1)">
       <span className="ek-metric-label">{label}</span>
       <strong className="ek-metric-value">{value}</strong>
       {note ? <p className="ek-metric-note">{note}</p> : null}
-    </div>
+    </TiltCard>
   );
 }
 

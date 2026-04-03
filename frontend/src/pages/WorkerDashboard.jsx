@@ -1,7 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { analyticsService, claimService, workerService } from '../services/api';
-import { ShieldCheck, Clock, CheckCircle2, AlertTriangle, CloudRain, ThermometerSun, Wind, RefreshCw, Navigation, Zap, Target, Shield, Heart, Activity, Cpu, Terminal, Layers } from 'lucide-react';
+import { ShieldCheck, Clock, CheckCircle2, AlertTriangle, CloudRain, ThermometerSun, Wind, RefreshCw, Navigation, Zap, Target, Shield, Heart, Activity, Cpu, Terminal, Layers, Radio } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1, delayChildren: 0.1 }
+  },
+  exit: { opacity: 0, filter: "blur(10px)", transition: { duration: 0.3 } }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 40, scale: 0.95, filter: "blur(5px)" },
+  visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { type: "spring", stiffness: 120, damping: 15 } }
+};
 
 const ProtectionGauge = ({ percentage }) => {
   const radius = 60;
@@ -80,9 +94,15 @@ const WorkerDashboard = ({ workerId }) => {
   if (isLoading) return null;
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto px-2">
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      className="space-y-6 max-w-6xl mx-auto px-2 pb-20 overflow-x-hidden"
+    >
       {/* Header Section */}
-      <section className="tactical-card-emerald flex flex-wrap items-center justify-between gap-6 p-6 overflow-hidden">
+      <motion.section variants={itemVariants} className="relative flex flex-wrap items-center justify-between gap-6 p-8 rounded-[2rem] overflow-hidden bg-gradient-to-br from-carbon-dark to-carbon border border-emerald-tactical/30 shadow-[0_8px_32px_rgba(16,185,129,0.1)] group transition-all duration-500 hover:shadow-[0_8px_32px_rgba(16,185,129,0.15)]">
         <div className="absolute right-0 top-0 w-64 h-64 bg-emerald-glow/5 rounded-full blur-3xl -z-10" />
         
         <div className="flex items-center gap-6 relative z-10">
@@ -93,7 +113,7 @@ const WorkerDashboard = ({ workerId }) => {
           <div className="space-y-1">
             <div className="flex items-center gap-2 mb-1">
               <span className="w-2 h-2 rounded-full bg-emerald-glow animate-pulse shadow-[0_0_8px_var(--emerald-glow)]"></span>
-              <span className="text-[10px] font-black uppercase tracking-widest text-emerald-glow/70">System Connected // Active Beacon</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-emerald-glow/70">System Connected</span>
             </div>
             <h1 className="text-3xl font-black text-white tracking-tight leading-none uppercase">
               {greeting}, <span className="text-emerald-glow">{profile?.name?.split(' ')[0]}</span>
@@ -103,14 +123,14 @@ const WorkerDashboard = ({ workerId }) => {
                 <Target size={12} className="text-emerald-glow" /> 
                 {profile?.zone_id?.replace('_', ' ')}
               </div>
-              <p className="text-white/40 font-bold text-[10px] uppercase tracking-widest border-l border-white/10 pl-3">Tier: Priority Sentinel</p>
+              <p className="text-white/40 font-bold text-[10px] uppercase tracking-widest border-l border-white/10 pl-3">Tier: Premium</p>
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-4 bg-carbon-dark/50 p-3 border border-white/5 shadow-inner relative z-10 min-w-[180px]">
           <div className="text-right px-1">
-            <p className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em] mb-1">Status Protocol</p>
+            <p className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em] mb-1">Status</p>
             <p className={`text-xs font-black tracking-widest uppercase ${profile?.is_online ? 'text-emerald-glow' : 'text-white/20'}`}>
               {profile?.is_online ? 'Live // Tracking' : 'Offline'}
             </p>
@@ -127,11 +147,11 @@ const WorkerDashboard = ({ workerId }) => {
             </motion.div>
           </button>
         </div>
-      </section>
+      </motion.section>
 
       {/* Primary Analytics Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="tactical-card p-6 border-none bg-gradient-to-br from-emerald-tactical/30 via-carbon/80 to-carbon shadow-tactical flex flex-col justify-between group overflow-hidden relative col-span-2 md:col-span-1 border-l-4 border-emerald-glow/40">
+      <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-5">
+        <motion.div whileHover={{ scale: 1.02 }} className="relative overflow-hidden p-6 rounded-3xl bg-gradient-to-br from-emerald-tactical/20 via-carbon-dark/90 to-carbon shadow-[0_8px_32px_rgba(0,0,0,0.5)] flex flex-col justify-between group border border-white/5 border-l-4 border-l-emerald-glow/50 backdrop-blur-xl transition-all duration-500 col-span-2 md:col-span-1">
           <div className="absolute -right-8 -top-8 w-32 h-32 bg-emerald-glow/5 blur-2xl rounded-full group-hover:bg-emerald-glow/10 transition-colors" />
           <div className="relative z-10 space-y-4">
             <div className="flex justify-between items-center">
@@ -146,25 +166,25 @@ const WorkerDashboard = ({ workerId }) => {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="tactical-card p-4 flex flex-col items-center justify-center bg-carbon border-white/5 shadow-inner relative overflow-hidden col-span-2 md:col-span-2">
+        <motion.div whileHover={{ scale: 1.02 }} className="relative overflow-hidden p-6 rounded-3xl flex flex-col items-center justify-center bg-carbon-dark/80 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)] hover:border-emerald-glow/30 transition-all duration-500 col-span-2 md:col-span-2 group">
           <div className="absolute inset-0 bg-gradient-to-t from-emerald-glow/5 to-transparent pointer-events-none" />
           <div className="relative z-10 flex items-center gap-10 w-full justify-around">
             <ProtectionGauge percentage={98} />
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                  <Radio size={14} className="text-emerald-glow animate-pulse" />
-                 <p className="text-emerald-glow font-black text-[10px] uppercase tracking-widest leading-none">Sensor Mesh: ONLINE</p>
+                 <p className="text-emerald-glow font-black text-[10px] uppercase tracking-widest leading-none">Sensors: ONLINE</p>
               </div>
               <p className="text-white/40 font-bold text-xs max-w-[160px] leading-tight">
-                Parametric validation active. Environmental indices matching ground truth.
+                Parametric validation active. Weather data confirmed.
               </p>
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="tactical-card p-6 space-y-5 bg-carbon border-white/5 border-l-4 border-emerald-glow/40 group">
+        <motion.div whileHover={{ scale: 1.02 }} className="relative overflow-hidden p-6 space-y-5 rounded-3xl bg-carbon-dark/80 backdrop-blur-xl border border-white/10 border-l-4 border-l-emerald-glow/40 shadow-[0_8px_32px_rgba(0,0,0,0.4)] hover:border-emerald-glow/30 transition-all duration-500 group">
           <div className="flex items-center justify-between">
             <div className="p-2.5 bg-emerald-glow/5 rounded-lg text-emerald-glow border border-emerald-tactical/20 group-hover:bg-emerald-glow/10 transition-colors">
               <Activity size={20} />
@@ -176,23 +196,23 @@ const WorkerDashboard = ({ workerId }) => {
           </div>
           <div className="pt-4 border-t border-white/5 space-y-2.5">
              <div className="flex justify-between items-center text-white/60 font-bold text-[10px] uppercase tracking-wider">
-                <span>Auto-Detection</span>
+                <span>Risk Detection</span>
                 <CheckCircle2 size={14} className="text-emerald-glow" />
              </div>
              <div className="flex justify-between items-center text-white/60 font-bold text-[10px] uppercase tracking-wider">
-                <span>Risk Validation</span>
+                <span>Claim Validation</span>
                 <CheckCircle2 size={14} className="text-emerald-glow" />
              </div>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-2">
         {/* Settlement Ticker */}
         <div className="lg:col-span-3 space-y-4">
-          <div className="flex items-center justify-between bg-carbon-dark/80 px-6 py-3 border border-white/5 border-l-4 border-emerald-glow shadow-tactical">
+          <div className="flex items-center justify-between rounded-xl bg-carbon-dark/90 backdrop-blur-md px-6 py-4 border border-white/10 border-l-4 border-l-emerald-glow shadow-lg">
             <h2 className="text-xs font-black text-white tracking-[0.2em] flex items-center gap-3 uppercase">
-              <Clock size={16} className="text-emerald-glow" /> Recent Security Logs
+              <Clock size={16} className="text-emerald-glow" /> Recent Claims
             </h2>
             <button onClick={fetchData} className="p-2 hover:bg-white/5 rounded transition-colors text-white/40 hover:text-emerald-glow">
               <RefreshCw className={`${isRefreshing ? 'animate-spin' : ''}`} size={16} />
@@ -208,7 +228,7 @@ const WorkerDashboard = ({ workerId }) => {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  className="tactical-card p-4 flex items-center justify-between group cursor-pointer border-white/5 hover:border-emerald-tactical/40 transition-all bg-carbon/60 backdrop-blur-sm"
+                  className="relative p-5 rounded-2xl flex items-center justify-between group cursor-pointer border border-white/5 hover:border-emerald-glow/40 bg-carbon-dark/60 backdrop-blur-xl shadow-lg hover:shadow-[0_8px_24px_rgba(16,185,129,0.15)] hover:-translate-y-0.5 transition-all duration-300"
                 >
                   <div className="flex items-center gap-5">
                     <div className="p-3 bg-carbon-dark border border-white/5 rounded text-emerald-glow group-hover:border-emerald-tactical/30 transition-colors">
@@ -248,15 +268,15 @@ const WorkerDashboard = ({ workerId }) => {
 
         {/* Engine Visualization */}
         <div className="space-y-4 lg:col-span-1">
-          <div className="bg-carbon-dark/80 px-6 py-3 border border-white/5 border-l-4 border-alert-orange">
-             <h2 className="text-xs font-black text-white tracking-[0.2em] uppercase">Core Risk Engine</h2>
+          <div className="rounded-xl bg-carbon-dark/90 backdrop-blur-md px-6 py-4 border border-white/10 border-l-4 border-l-alert-orange shadow-lg">
+             <h2 className="text-xs font-black text-white tracking-[0.2em] uppercase">Risk Multipliers</h2>
           </div>
-          <div className="tactical-card p-0 overflow-hidden border-white/5 bg-carbon/60 group">
+          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-carbon-dark/70 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] group hover:border-alert-orange/30 transition-all duration-500">
             <div className="bg-gradient-to-br from-alert-orange/10 to-transparent p-5 border-b border-white/5 relative overflow-hidden">
               <div className="absolute right-[-20%] bottom-[-20%] text-alert-orange/5 group-hover:scale-110 transition-transform duration-500">
                  <Zap size={100} />
               </div>
-              <p className="text-[9px] font-black text-alert-orange uppercase tracking-[0.2em] mb-2 relative z-10">Real-time Basis</p>
+              <p className="text-[9px] font-black text-alert-orange uppercase tracking-[0.2em] mb-2 relative z-10">Current Rate</p>
               <div className="flex items-baseline gap-1.5 relative z-10">
                 <span className="text-lg font-bold text-alert-orange">₹</span>
                 <p className="text-4xl font-black text-white tracking-tighter leading-none">124.00</p>
@@ -265,10 +285,10 @@ const WorkerDashboard = ({ workerId }) => {
             </div>
             <div className="p-5 space-y-4 bg-carbon-dark/40">
               {[
-                { label: 'Risk Mult.', val: '1.2x', color: 'text-alert-orange' },
-                { label: 'Sensor Drift', val: '0.04%', color: 'text-white/40' },
+                { label: 'Risk Multiplier', val: '1.2x', color: 'text-alert-orange' },
+                { label: 'API Latency', val: '0.04%', color: 'text-white/40' },
                 { label: 'Proximity', val: '0.9x', color: 'text-emerald-glow' },
-                { label: 'Index Mod.', val: '1.4x', color: 'text-white' }
+                { label: 'Weather Mod.', val: '1.4x', color: 'text-white' }
               ].map((row) => (
                 <div key={row.label} className="flex justify-between items-center group/row border-b border-white/5 pb-3 last:border-0 last:pb-0">
                   <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">{row.label}</span>
@@ -279,7 +299,7 @@ const WorkerDashboard = ({ workerId }) => {
               <div className="mt-4 pt-4 border-t border-white/5 flex items-start gap-3 bg-carbon-dark/60 p-3">
                  <Terminal size={14} className="text-emerald-glow shrink-0 mt-0.5" />
                  <p className="text-[10px] text-white/40 font-bold leading-tight uppercase tracking-tight">
-                   Validation protocol: P2P Mesh verified. Multi-stage claim approval engaged.
+                   Validation protocol: System verified. Claim approval engaged.
                  </p>
               </div>
             </div>
@@ -287,11 +307,11 @@ const WorkerDashboard = ({ workerId }) => {
           
           <button className="tactical-btn-emerald w-full justify-center">
              <Layers size={14} />
-             System Details
+             More Details
           </button>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

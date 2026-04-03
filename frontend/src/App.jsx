@@ -1,5 +1,6 @@
 import React from 'react';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import AmbientBackground from './components/AmbientBackground';
 import Navbar from './components/Navbar';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -9,6 +10,7 @@ import EasyKavachDashboard from './pages/EasyKavachDashboard';
 import LoginPage from './pages/LoginPage';
 import ProfilePage from './pages/ProfilePage';
 import RegisterPage from './pages/RegisterPage';
+
 
 function RequireRole({ role, children }) {
   const { session, isAuthenticated } = useAuth();
@@ -25,11 +27,14 @@ function RequireRole({ role, children }) {
 }
 
 function AppRoutes() {
+  const location = useLocation();
+
   return (
     <div className="ek-app">
       <AmbientBackground />
       <Navbar />
-      <Routes>
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
         <Route path="/" element={<EasyKavachDashboard />} />
         <Route path="/dashboard" element={<Navigate to="/" replace />} />
         <Route path="/register" element={<RegisterPage />} />
@@ -59,7 +64,8 @@ function AppRoutes() {
           }
         />
         <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+        </Routes>
+      </AnimatePresence>
     </div>
   );
 }

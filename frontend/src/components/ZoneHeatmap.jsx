@@ -12,11 +12,11 @@ const ZoneHeatmap = ({ zones = [] }) => {
         {zones.map((zone, idx) => {
           const x = 50 + (idx % 2 === 0 ? idx * 80 : 350 - idx * 70);
           const y = 80 + (idx * 60 + idx * idx * 2) % 250;
-          const radius = 30 + zone.risk_score * 50;
-          const color = zone.risk_score > 0.6 ? '#EA580C' : zone.risk_score > 0.3 ? '#F59E0B' : '#10B981';
+          const radius = 30 + (zone.base_risk_score || 0) * 50;
+          const color = (zone.base_risk_score || 0) > 0.6 ? '#EA580C' : (zone.base_risk_score || 0) > 0.3 ? '#F59E0B' : '#10B981';
           
           return (
-            <g key={zone.zone_id} className="cursor-pointer group/node">
+            <g key={zone.id || idx} className="cursor-pointer group/node">
               <motion.circle
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 0.12 }}
@@ -39,7 +39,7 @@ const ZoneHeatmap = ({ zones = [] }) => {
                 x={x + 10} y={y + 5}
                 className="text-[10px] font-black fill-white/40 uppercase tracking-widest pointer-events-none group-hover/node:fill-white transition-all font-sans"
               >
-                {zone.zone_name.split(',')[0]}
+                {zone.name?.split(',')[0] || 'Zone'}
               </text>
             </g>
           );
