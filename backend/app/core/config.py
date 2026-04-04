@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     
     # Database - prioritize environment variables
-    DATABASE_URL: str = "sqlite:///./easykavach.db"
+    DATABASE_URL: str = "sqlite:////var/data/easykavach.db"
     
     # ML Model Absolute Paths (fix for serverless runtime)
     EARNINGS_MODEL_REL_PATH: str = "app/ml/earnings_predictor/model/best_earnings_model.pkl"

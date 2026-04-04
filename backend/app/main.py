@@ -51,9 +51,19 @@ app = FastAPI(
 )
 
 # CORS
+origins = [
+    "http://localhost:3000",
+    "http://localhost:3005",
+    "https://easykavach-ui.onrender.com",  # Update with your Render URL if different
+]
+
+import os
+if os.getenv("RENDER_EXTERNAL_URL"):  # Add the Render-assigned dynamic URL
+    origins.append(os.getenv("RENDER_EXTERNAL_URL"))
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
