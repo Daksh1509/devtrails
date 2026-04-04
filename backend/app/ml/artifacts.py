@@ -55,22 +55,9 @@ def _resolve_artifact_path(*relative_candidates: str) -> Path:
     return ARTIFACT_ROOT_CANDIDATES[-1] / relative_candidates[-1]
 
 
-EARNINGS_MODEL_PATH = _resolve_artifact_path(
-    "best_earnings_model.pkl",
-    "earnings_predictor/model/best_earnings_model.pkl",
-    "easykavach_earnings_model.pt",
-    "earnings_predictor/model/easykavach_earnings_model.pt",
-)
-FRAUD_MODEL_PATH = _resolve_artifact_path(
-    "best_fraud_model.pkl",
-    "fraud_classifier/model/best_fraud_model.pkl",
-    "easykavach_fraud_model.pt",
-    "fraud_classifier/model/easykavach_fraud_model.pt",
-)
-METADATA_PATH = _resolve_artifact_path(
-    "easykavach_model_metadata.pt",
-    "metadata/easykavach_model_metadata.pt",
-)
+EARNINGS_MODEL_PATH = settings.EARNINGS_MODEL_PATH
+FRAUD_MODEL_PATH = settings.FRAUD_MODEL_PATH
+METADATA_PATH = settings.METADATA_PATH
 
 DEFAULT_EARNINGS_FEATURES = [
     "Delivery_person_Age",

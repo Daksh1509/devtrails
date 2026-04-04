@@ -10,7 +10,8 @@ from app.services.claim_processor import process_claims_for_trigger
 
 router = APIRouter()
 
-@router.post("/check-now", response_model=List[TriggerSchema])
+@router.get("/check")
+@router.post("/check-now")
 async def check_triggers(zone_id: Optional[str] = None, db: Session = Depends(get_db)):
     if zone_id:
         zones = db.query(Zone).filter(Zone.id == zone_id).all()

@@ -11,38 +11,23 @@ class Settings(BaseSettings):
     VERSION: str = "1.0.0"
     API_V1_STR: str = "/api/v1"
     
-    # Database
+    # Database - prioritize environment variables
     DATABASE_URL: str = "sqlite:///./easykavach.db"
     
-    # External APIs
-    OWM_API_KEY: Optional[str] = None # OpenWeatherMap
-    
-    # Configuration
-    TRIGGER_POLL_INTERVAL_SECONDS: int = 300
-    MARGIN_RATE: float = 0.10
-    DEBUG: bool = True
-    SECRET_KEY: str = "dev-secret-key-32-chars-long-at-least"
-
-    @field_validator("DEBUG", mode="before")
-    @classmethod
-    def _parse_debug_value(cls, value):
-        if isinstance(value, bool):
-            return value
-
-        if isinstance(value, str):
-            normalized = value.strip().lower()
-            if normalized in {"1", "true", "yes", "on", "debug"}:
-                return True
-            if normalized in {"0", "false", "no", "off", "release", "prod", "production"}:
-                return False
-
-        return value
+    # ML Model Absolute Paths (fix for serverless runtime)
+    EARNINGS_MODEL_REL_PATH: str = "app/ml/earnings_predictor/model/best_earnings_model.pkl"
+    FRAUD_MODEL_REL_PATH: str = "app/ml/fraud_classifier/model/best_fraud_model.pkl"
+    METADATA_REL_PATH: str = "app/ml/metadata/easykavach_model_metadata.pt"
 
     @field_validator("DATABASE_URL", mode="before")
     @classmethod
-    def _resolve_sqlite_path(cls, value):
+    def _resolve_db_url(cls, value):
         if not isinstance(value, str):
             return value
+
+        # Fix for SQLAlchemy 2.0+ and Vercel/Neon Postgres (needs postgresql:// instead of postgres://)
+        if value.startswith("postgres://"):
+            value = value.replace("postgres://", "postgresql://", 1)
 
         if value.startswith("sqlite:///"):
             raw_path = value.replace("sqlite:///", "", 1)
@@ -53,6 +38,22 @@ class Settings(BaseSettings):
 
         return value
     
-    model_config = SettingsConfigDict(env_file=str(BASE_DIR / ".env"), case_sensitive=True)
+    @property
+    def EARNINGS_MODEL_PATH(self) -> Path:
+        return (BASE_DIR / self.EARNINGS_MODEL_REL_PATH).resolve()
+
+    @property
+    def FRAUD_MODEL_PATH(self) -> Path:
+        return (BASE_DIR / self.FRAUD_MODEL_REL_PATH).resolve()
+    
+    @property
+    def METADATA_PATH(self) -> Path:
+        return (BASE_DIR / self.METADATA_REL_PATH).resolve()
+
+    model_config = SettingsConfigDict(
+        env_file=str(BASE_DIR / ".env"), 
+        case_sensitive=True,
+        extra="ignore"
+    )
 
 settings = Settings()
