@@ -10,6 +10,11 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "EasyKavach"
     VERSION: str = "1.0.0"
     API_V1_STR: str = "/api/v1"
+    DEBUG: bool = True
+    SECRET_KEY: str = "dev-secret-key-32-chars-long-at-least"
+    OWM_API_KEY: Optional[str] = None
+    TRIGGER_POLL_INTERVAL_SECONDS: int = 300
+    MARGIN_RATE: float = 0.10
     
     # Database - prioritize environment variables
     DATABASE_URL: str = "sqlite:////var/data/easykavach.db"

@@ -11,6 +11,7 @@ from typing import Any
 import joblib
 import pandas as pd
 
+from app.core.config import settings
 logger = logging.getLogger(__name__)
 
 try:  # pragma: no cover - the warning class is version-specific
