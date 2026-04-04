@@ -35,13 +35,18 @@ class Settings(BaseSettings):
             value = value.replace("postgres://", "postgresql://", 1)
 
         if value.startswith("sqlite:///"):
+            # Check if it's already an absolute path (4 slashes: sqlite:////) 
+            # or if the path after sqlite:/// is absolute
             raw_path = value.replace("sqlite:///", "", 1)
             path = Path(raw_path)
-            if not path.is_absolute():
-                resolved = (BASE_DIR / path).resolve()
-                return f"sqlite:///{resolved}"
-
-        return value
+            
+            # If it's already absolute (e.g. /var/data/...), return as is
+            if path.is_absolute():
+                return f"sqlite:///{path}"
+                
+            # If it's relative, make it absolute based on BASE_DIR
+            resolved = (BASE_DIR / path).resolve()
+            return f"sqlite:///{resolved}"
     
     @property
     def EARNINGS_MODEL_PATH(self) -> Path:

@@ -1,3 +1,4 @@
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import inspect, text
@@ -7,11 +8,8 @@ from app.core.database import engine, Base
 from app.tasks.trigger_scheduler import setup_scheduler
 import contextlib
 
-# Create tables
-Base.metadata.create_all(bind=engine)
-
-
 def ensure_worker_columns() -> None:
+    from sqlalchemy import inspect, text
     inspector = inspect(engine)
     if "workers" not in inspector.get_table_names():
         return
@@ -29,11 +27,22 @@ def ensure_worker_columns() -> None:
                 continue
             connection.execute(text(f"ALTER TABLE workers ADD COLUMN {column_name} {column_type}"))
 
-
-ensure_worker_columns()
-
 @contextlib.asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Ensure database directory exists for SQLite
+    if settings.DATABASE_URL.startswith("sqlite:///"):
+        # raw_path will be something like /var/data/easykavach.db
+        raw_path = settings.DATABASE_URL.replace("sqlite:///", "", 1)
+        db_path = Path(raw_path)
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        print(f"Ensuring database directory exists: {db_path.parent}")
+
+    # Create tables and run migrations
+    print("Initializing database...")
+    Base.metadata.create_all(bind=engine)
+    ensure_worker_columns()
+    print("Database initialization complete.")
+
     # Startup: Start scheduler
     scheduler = setup_scheduler()
     scheduler.start()
